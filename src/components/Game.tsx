@@ -1,54 +1,31 @@
 "use client"
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
-import { Pokemon, PokemonClient } from "pokenode-ts";
-const api = new PokemonClient();
+import { useState } from "react";
+
+import { gameState, GameState, startingMons } from "@/lib/gameState";
+import SelectMon from "./SelectMon";
+import Setup from "./Setup";
+import FightLoad from "./FightLoad";
 
 export default function Game() {
 
-  const [selectedMon, setSelectedMon] = useState(false);
-
-  const [options, setOptions] = useState<Pokemon[]>([]);
-
-
-
-  useEffect(() => {
-    async function setChoice() {
-      const option1 = await api.getPokemonByName("bulbasaur")
-        .catch((err: Error) => { console.log(err);})
-      const option2 = await api.getPokemonByName("squirtle")
-        .catch((err: Error) => { console.log(err);})
-      const option3 = await api.getPokemonByName("charmander")
-        .catch((err: Error) => { console.log(err);})
-      setOptions([option1, option2, option3].filter((option): option is Pokemon => option !== undefined));
-    }
-    setChoice();
-  }, []);
-
-
-  const selectMonClick = () => {
-    setSelectedMon(true);
-  }
+  const [game, setGame] = useState<GameState>(gameState);
 
     return (
-        <div className="h-full flex items-center justify-center">
-          
-          {!selectedMon && (
-            <div>
-              <h1>Select your starting Pokemon</h1>
-              <div className="flex flex-row gap-4">
-              {options.map((option) => (
-                <div key={option.id} className="flex flex-col items-center justify-center">
-                  <Image src={option.sprites.front_default ?? ""} alt={option.name} width={96} height={96} />
-                  <p>{option.name}</p>
-                  <button onClick={() => selectMonClick()}>Select</button>
-                </div>
-              ))}
-              </div>
-            </div>
-          )}
+      <div className="h-full flex items-center justify-center">
+        
+        {game.currentState === "startGame" && (
+          <SelectMon game={game} setGame={setGame} selection={startingMons} />
+        )}
 
-        </div>
+        {game.currentState === "setup" && (
+          <Setup game={game} setGame={setGame} />
+        )}
+
+        {game.currentState === "fight" && (
+          <FightLoad game={game} setGame={setGame} />
+        )}
+
+      </div>
     )
 }

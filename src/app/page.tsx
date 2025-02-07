@@ -1,6 +1,6 @@
 import Game from "@/components/Game";
 
-export default function Home() {
+export default function Play() {
 
   return (
     <div className="h-full flex items-center justify-center">
@@ -8,3 +8,4 @@ export default function Home() {
     </div>
   )
 }
+
