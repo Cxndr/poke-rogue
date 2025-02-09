@@ -22,16 +22,19 @@ export type GameState = {
   "selectingMon" |  
   "setup" |
   "fight" |
+  "upgrade" |
   "gameOver";
   options: Pokemon[];
   round: Range<1,10>;
+  fightLog: string[];
 }
 
 export const gameState: GameState = {
   party: [],
   currentState: "startGame",
   options: [],
-  round: 1
+  round: 1,
+  fightLog: []
 }
 
 export const startingMons: Pokemon[] = [
@@ -43,21 +46,22 @@ export const startingMons: Pokemon[] = [
 ];
 
 export async function getRandomMove(pokemon: Pokemon) {
-  const moves = pokemon.moves;
-  const gen1Moves = moves.filter((move) => 
-    move.version_group_details.some((v) => 
-      v.version_group.name === "red-blue"
-    )
-  );
-  const validMoves = [];
-  for (const move of gen1Moves) {
-    const moveData = await moveApi.getMoveByName(move.move.name);
-    if (!moveData.power || moveData.power <= 0) {
-      continue;
-    }
-    validMoves.push(moveData);
-  }
-  const selectedMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+  // const moves = pokemon.moves;
+  // const gen1Moves = moves.filter((move) => 
+  //   move.version_group_details.some((v) => 
+  //     v.version_group.name === "red-blue"
+  //   )
+  // );
+  // const validMoves = [];
+  // for (const move of gen1Moves) {
+  //   const moveData = await moveApi.getMoveByName(move.move.name);
+  //   if (!moveData.power || moveData.power <= 0) {
+  //     continue;
+  //   }
+  //   validMoves.push(moveData);
+  // }
+  // const selectedMove = validMoves[Math.floor(Math.random() * validMoves.length)];
+  const selectedMove = await moveApi.getMoveByName(pokemon.moves[0].move.name); // changed for faster testing, set back to random
   return selectedMove;
 }
 
@@ -93,7 +97,12 @@ export function executeAttack(mon: LocalMon, target: LocalMon) {
   }
   const damage = Math.floor(mon.move.power * mon.level / 50) + 2;
   target.hp -= damage;
-  console.log(`${mon.data.name} used ${mon.move.name} and did ${damage} damage to ${target.data.name}`);
+  if (target.hp <= 0) {
+    target.hp = 0;
+    gameState.fightLog.push(`${ProperName(target.data.name)} fainted!`);
+  } else {
+    gameState.fightLog.push(`${ProperName(mon.data.name)} used ${ProperName(mon.move.name)} and did ${damage} damage to ${ProperName(target.data.name)}`);
+  }
 }
 
 export async function newLocalMon(pokemon: Pokemon) {
@@ -103,4 +112,8 @@ export async function newLocalMon(pokemon: Pokemon) {
     level: 5,
     move: await getRandomMove(pokemon)
   }
+}
+
+export function checkIfPartyDefeated(party: LocalMon[]) {
+  return party.every(mon => mon.hp <= 0);
 }

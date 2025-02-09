@@ -25,7 +25,7 @@ export default function FightLoad({game, setGame}: FightLoadProps) {
   }
 
   return (
-    <div className="h-full p-8 flex items-center justify-between">
+    <div className="h-full w-full p-8 flex items-center justify-center">
       { enemyLoaded 
         ? <Fight game={game} setGame={setGame} enemyParty={enemyParty} />
         : <div>Loading...</div>
