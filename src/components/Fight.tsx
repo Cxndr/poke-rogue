@@ -1,6 +1,6 @@
 import { executeAttack, GameState, getMaxHP, LocalMon, ProperName } from "@/lib/gameState";
 import Image from "next/image";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 type FightProps = {
   game: GameState;
@@ -9,18 +9,34 @@ type FightProps = {
 }
 
 export default function Fight({game, setGame, enemyParty}: FightProps) {
+  // store timeouts for cleanup
+  const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
 
   useEffect(() => {
-    console.log("starting attacks");
-    for (const mon of game.party) {
-      console.log("attack timer: ", mon.data.name);
-      setTimeout(() => {
-        const target = enemyParty[Math.floor(Math.random() * enemyParty.length)];
-        console.log("attacking: ", target.data.name);
-        executeAttack(mon, target);
-        console.log(enemyParty);
-      },  mon.data.stats[3].base_stat * 100);
-    }
+    game.party.forEach((mon) => {
+      const startAttackLoop = () => {
+        if (mon.hp <= 0) return;
+
+        timeoutRefs.current[mon.data.name] = setTimeout(() => {
+          const target = enemyParty[Math.floor(Math.random() * enemyParty.length)];
+          console.log(`${mon.data.name} attacking ${target.data.name}`);
+          executeAttack(mon, target);
+          setGame({...game});
+          
+          startAttackLoop();
+        }, mon.data.stats[3].base_stat * 100);
+      };
+
+      startAttackLoop();
+    });
+
+    // clear all timeouts when component unmounts
+    return () => {
+      Object.values(timeoutRefs.current).forEach(timeout => {
+        clearTimeout(timeout);
+      });
+      timeoutRefs.current = {};
+    };
   }, []);
 
   return (
