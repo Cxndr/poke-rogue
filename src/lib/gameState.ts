@@ -122,23 +122,81 @@ export function checkIfPartyDefeated(party: LocalMon[]) {
   return party.every(mon => mon.hp <= 0);
 }
 
+export type Stat = "hp" | "attack" | "defense" | "special-attack" | "special-defense" | "speed";
+export function upgradeStat(stat:Stat, amount: number, pokemon: LocalMon) {
+  const statData = pokemon.data.stats.find(s => s.stat.name === stat);
+  if (statData) {
+    statData.base_stat += amount;
+  }
+}
+export function getUpgradeStat() {
+  const statNumber = Math.floor(Math.random() * 6) + 1;
+  let stat: Stat = "hp";
+  switch (statNumber) {
+    case 1:
+      stat = "hp";
+      break;
+    case 2:
+      stat = "attack";
+      break;
+    case 3:
+      stat = "defense";
+      break;
+    case 4:
+      stat = "special-attack";
+      break;
+    case 5:
+      stat = "special-defense";
+      break;
+    case 6:
+      stat = "speed";
+      break;
+  }
+  return stat;
+}
+
+export function upgradeMove(move: Move, pokemon: LocalMon) {
+  pokemon.move = move;
+}
+
+
 type Upgrade = {
   name: string;
   description: string;
-  effect: () => void;
+}
+
+function getRandomUpgrade() {
+  const upgradeRoll = Math.floor(Math.random() * 100) + 1;
+  let upgrade: Upgrade;
+  if (upgradeRoll < 25) {
+    upgrade = {
+      name: "Improve Stat",
+      description: `+5 ${getUpgradeStat()}`
+    };
+  }
+
+  return upgrade;
+  }
+
+export function getUpgrades(count: number) {
+  const upgrades: Upgrade[] = [];
+  for (let i = 0; i < count; i++) {
+    getRandomUpgrade();
+  }
+  return upgrades;
 }
 
 /* UPGRADES
 
- - item
+  - item
     - capes
     - belts
     - gloves
     - supereffective glasses
     - pokeflute
- - new move (move trainer? tm?)
- - stats (minerals, rare candy)
- - special
+  - new move (move trainer? tm?)
+  - stats (minerals, rare candy)
+  - special
     - daycare center
     - game corner
     - pokeathlon
@@ -153,13 +211,3 @@ type Upgrade = {
     - professor oak (get new mon)
     
 */
-
-export const upgrades: Upgrade[] = [
-  {
-    name: "HP Up",
-    description: "Increase your HP by 10",
-    effect: () => {
-      gameState.party[0].hp += 10;
-    }
-  }
-]
