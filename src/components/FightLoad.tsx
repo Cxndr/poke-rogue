@@ -5,9 +5,10 @@ import Fight from "./Fight";
 type FightLoadProps = {
   game: GameState;
   setGame: (game: GameState) => void;
+  setMonSelection: (mon: LocalMon[]) => void;
 }
 
-export default function FightLoad({game, setGame}: FightLoadProps) {
+export default function FightLoad({game, setGame, setMonSelection}: FightLoadProps) {
 
   const [enemyParty, setEnemyParty] = useState<LocalMon[]>([]);
   const [enemyFetched, setEnemyFetched] = useState(false);
@@ -17,6 +18,7 @@ export default function FightLoad({game, setGame}: FightLoadProps) {
     const enemyParty = await getEnemyParty(game.round*5, 3);
     setEnemyParty(enemyParty);
     setEnemyLoaded(true);
+    setMonSelection(enemyParty);
   }
 
   if (!enemyFetched) {

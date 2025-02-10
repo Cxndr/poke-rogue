@@ -18,8 +18,8 @@ type Enumerate<N extends number, Acc extends number[] = []> = Acc['length'] exte
 export type GameState = {
   party: LocalMon[];
   currentState: 
-  "startGame" |   
-  "selectingMon" |  
+  "startGame" | 
+  "selectMon" |  
   "setup" |
   "fight" |
   "upgrade" |
@@ -44,6 +44,10 @@ export const startingMons: Pokemon[] = [
   await monApi.getPokemonByName("pikachu"),
   await monApi.getPokemonByName("eevee"),
 ];
+
+export function getStartingMons() {
+  return startingMons.map(mon => newLocalMon(mon));
+}
 
 export async function getRandomMove(pokemon: Pokemon) {
   // const moves = pokemon.moves;
@@ -117,3 +121,45 @@ export async function newLocalMon(pokemon: Pokemon) {
 export function checkIfPartyDefeated(party: LocalMon[]) {
   return party.every(mon => mon.hp <= 0);
 }
+
+type Upgrade = {
+  name: string;
+  description: string;
+  effect: () => void;
+}
+
+/* UPGRADES
+
+ - item
+    - capes
+    - belts
+    - gloves
+    - supereffective glasses
+    - pokeflute
+ - new move (move trainer? tm?)
+ - stats (minerals, rare candy)
+ - special
+    - daycare center
+    - game corner
+    - pokeathlon
+    - gym (extra battle with fixed rewards?)
+    - acro bike
+    - missingno?
+    - egg?
+    - trade
+    - safari zone (get new fixed mon)
+    - team rocket (risk/reward)
+    - museum
+    - professor oak (get new mon)
+    
+*/
+
+export const upgrades: Upgrade[] = [
+  {
+    name: "HP Up",
+    description: "Increase your HP by 10",
+    effect: () => {
+      gameState.party[0].hp += 10;
+    }
+  }
+]

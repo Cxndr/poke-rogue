@@ -65,7 +65,7 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
           <div className="flex flex-col items-center justify-center">
             <h1>Fight {fightStatus}</h1>
             {fightStatus === "Won" && (
-              <button onClick={() => setGame({...game, currentState: "upgrade"})}>Continue</button>
+              <button onClick={() => setGame({...game, currentState: "selectMon"})}>Continue</button>
             )}
             {fightStatus === "Lost" && (
               <button onClick={() => setGame({...game, currentState: "startGame"})}>Try Again</button>
