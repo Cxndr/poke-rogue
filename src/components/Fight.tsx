@@ -1,4 +1,4 @@
-import { checkIfPartyDefeated, executeAttack, GameState, getMaxHP, LocalMon, ProperName } from "@/lib/gameState";
+import { checkIfPartyDefeated, executeAttack, finishRound, GameState, getMaxHP, LocalMon, ProperName } from "@/lib/gameState";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
@@ -26,7 +26,7 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
         timeoutRefs.current[mon.data.name] = setTimeout(() => {
           const targetParty = enemyParty.filter(p => p.hp > 0);
           const target = targetParty[Math.floor(Math.random() * targetParty.length)];
-          executeAttack(mon, target);
+          executeAttack(mon, target, game);
           if (checkIfPartyDefeated(targetParty)) {
             setFightStatus("Won");
           } else {
@@ -55,6 +55,14 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
     }
   }, [fightLogUpdate]);
 
+  const fightWon = () => {
+    finishRound("won", game, setGame);
+  }
+
+  const fightLost = () => {
+    finishRound("lost", game, setGame);
+  }
+
   return (
     <div className="h-full w-full flex flex-row items-center justify-center gap-8">
 
@@ -65,10 +73,10 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
           <div className="flex flex-col items-center justify-center">
             <h1>Fight {fightStatus}</h1>
             {fightStatus === "Won" && (
-              <button onClick={() => setGame({...game, currentState: "selectMon"})}>Continue</button>
+              <button onClick={fightWon}>Continue</button>
             )}
             {fightStatus === "Lost" && (
-              <button onClick={() => setGame({...game, currentState: "startGame"})}>Try Again</button>
+              <button onClick={fightLost}>Try Again</button>
             )}
           </div>
         )}
@@ -84,11 +92,11 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
           ))}
         </div>
 
-        <div>
+        <div className="flex flex-row gap-4">
           {game.party.map((mon, index) => (
             <div key={index} className={`flex flex-col items-center justify-center ${mon.hp <= 0 && faintedClassName}`}>
             <p>Lvl: {mon.level} HP: {mon.hp}/{getMaxHP(mon.data.stats[0].base_stat, mon.level)}</p>
-            <Image src={mon.data.sprites.front_default ?? ""} alt={mon.data.name} width={96} height={96} />
+            <Image src={mon.data.sprites.back_default ?? ""} alt={mon.data.name} width={96} height={96} />
             <p>{ProperName(mon.data.name)}</p>
             <p>{ProperName(mon.move.name)}</p>
           </div>

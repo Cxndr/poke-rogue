@@ -25,6 +25,7 @@ export type GameState = {
   "setup" |
   "fight" |
   "upgrade" |
+  "gameComplete" |
   "gameOver";
   options: Pokemon[];
   round: Range<1,10>;
@@ -39,6 +40,25 @@ export const gameState: GameState = {
   round: 1,
   fightLog: [],
   inventory: [],
+}
+
+export function resetParty(game: GameState) {
+  game.party.forEach(mon => {
+    resetHP(mon);
+  });
+}
+
+export function finishRound(result: "won" | "lost", game: GameState, setGame: (game: GameState) => void) {
+  if (result === "won") {
+    if (game.round >= 10) {
+      setGame({...game, currentState: "gameComplete"});
+    } else {
+      setGame({...game, currentState: "selectMon", round: (game.round + 1) as Range<1,10>, fightLog: []});
+      resetParty(game);
+    }
+  } else {
+    setGame({...game, currentState: "startGame"});
+  }
 }
 
 export const startingMons: Pokemon[] = [
@@ -99,7 +119,7 @@ export function resetHP(mon: LocalMon) {
   mon.hp = getMaxHP(mon.data.stats[0].base_stat, mon.level);
 }
 
-export function executeAttack(mon: LocalMon, target: LocalMon) {
+export function executeAttack(mon: LocalMon, target: LocalMon, game: GameState) {
   if (!mon.move.power) {
     return;
   }
@@ -107,9 +127,9 @@ export function executeAttack(mon: LocalMon, target: LocalMon) {
   target.hp -= damage;
   if (target.hp <= 0) {
     target.hp = 0;
-    gameState.fightLog.push(`${ProperName(target.data.name)} fainted!`);
+    game.fightLog.push(`${ProperName(target.data.name)} fainted!`);
   } else {
-    gameState.fightLog.push(`${ProperName(mon.data.name)} used ${ProperName(mon.move.name)} and did ${damage} damage to ${ProperName(target.data.name)}`);
+    game.fightLog.push(`${ProperName(mon.data.name)} used ${ProperName(mon.move.name)} and did ${damage} damage to ${ProperName(target.data.name)}`);
   }
 }
 

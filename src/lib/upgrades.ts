@@ -66,20 +66,6 @@ export function upgradeMove(move: Move, pokemon: LocalMon) {
   pokemon.move = move;
 }
 
-function getRandomUpgrade() {
-  const upgradeRoll = Math.floor(Math.random() * 100) + 1;
-  if (upgradeRoll < 25) {
-  }
-}
-
-export function getUpgrades(count: number) {
-  const upgrades: Upgrade[] = [];
-  for (let i = 0; i < count; i++) {
-    getRandomUpgrade();
-  }
-  return upgrades;
-}
-
 export type ItemType = "vitamin" | "tm" | "tool";
 
 export interface BaseItem {
@@ -299,71 +285,86 @@ async function createTMUseFunction(moveName: string): Promise<(pokemon: LocalMon
 
 export function getRandomUpgrades(count: number): Upgrade[] {
   const upgrades: Upgrade[] = [];
+  const usedUpgrades = new Set<string>(); // Track used upgrades by name
   
-  for (let i = 0; i < count; i++) {
+  // Keep trying until we have enough unique upgrades
+  while (upgrades.length < count) {
     const roll = Math.random();
     
     if (roll < 0.6) { // 60% chance for item
       const itemRoll = Math.random();
       if (itemRoll < 0.4) { // 40% chance for vitamin
         const vitamin = vitamins[Math.floor(Math.random() * vitamins.length)];
-        upgrades.push({
-          type: "item",
-          name: vitamin.name,
-          description: vitamin.description,
-          execute: async (game) => {
-            game.inventory.push(vitamin);
-          }
-        });
+        // Only add if we haven't used this vitamin yet
+        if (!usedUpgrades.has(vitamin.name)) {
+          usedUpgrades.add(vitamin.name);
+          upgrades.push({
+            type: "item",
+            name: vitamin.name,
+            description: vitamin.description,
+            execute: async (game) => {
+              game.inventory.push(vitamin);
+            }
+          });
+        }
       } else if (itemRoll < 0.7) { // 30% chance for tool
         const tool = tools[Math.floor(Math.random() * tools.length)];
-        upgrades.push({
-          type: "item",
-          name: tool.name,
-          description: tool.description,
-          execute: async (game) => {
-            game.inventory.push(tool);
-          }
-        });
+        if (!usedUpgrades.has(tool.name)) {
+          usedUpgrades.add(tool.name);
+          upgrades.push({
+            type: "item",
+            name: tool.name,
+            description: tool.description,
+            execute: async (game) => {
+              game.inventory.push(tool);
+            }
+          });
+        }
       } else { // 30% chance for TM
         const tm = tms[Math.floor(Math.random() * tms.length)];
+        if (!usedUpgrades.has(tm.name)) {
+          usedUpgrades.add(tm.name);
+          upgrades.push({
+            type: "item",
+            name: tm.name,
+            description: tm.description,
+            execute: async (game) => {
+              game.inventory.push(tm);
+            }
+          });
+        }
+      }
+    } else if (roll < 0.75) { // 15% chance for Team Rocket
+      if (!usedUpgrades.has("Team Rocket Deal")) {
+        usedUpgrades.add("Team Rocket Deal");
         upgrades.push({
-          type: "item",
-          name: tm.name,
-          description: tm.description,
+          type: "teamRocket",
+          name: "Team Rocket Deal",
+          description: "Risk it all! 70% chance to get 3 random items, 30% chance to lose a random Pokémon",
           execute: async (game) => {
-            game.inventory.push(tm);
+            const rocketRoll = Math.random();
+            if (rocketRoll < 0.7) {
+              // Success - get 3 random items
+              for (let i = 0; i < 3; i++) {
+                const itemRoll = Math.random();
+                if (itemRoll < 0.4) {
+                  game.inventory.push(vitamins[Math.floor(Math.random() * vitamins.length)]);
+                } else if (itemRoll < 0.7) {
+                  game.inventory.push(tools[Math.floor(Math.random() * tools.length)]);
+                } else {
+                  game.inventory.push(tms[Math.floor(Math.random() * tms.length)]);
+                }
+              }
+            } else {
+              // Fail - lose a random pokemon
+              if (game.party.length > 1) { // Don't remove last pokemon
+                const removeIndex = Math.floor(Math.random() * game.party.length);
+                game.party.splice(removeIndex, 1);
+              }
+            }
           }
         });
       }
-    } else if (roll < 0.75) { // 15% chance for Team Rocket
-      upgrades.push({
-        type: "teamRocket",
-        name: "Team Rocket Deal",
-        description: "Risk it all! 70% chance to get 3 random items, 30% chance to lose a random Pokémon",
-        execute: async (game) => {
-          const rocketRoll = Math.random();
-          if (rocketRoll < 0.7) {
-            // Success - get 3 random items
-            for (let i = 0; i < 3; i++) {
-              const itemRoll = Math.random();
-              if (itemRoll < 0.4) {
-                game.inventory.push(vitamins[Math.floor(Math.random() * vitamins.length)]);
-              } else if (itemRoll < 0.7) {
-                game.inventory.push(tools[Math.floor(Math.random() * tools.length)]);
-              } else {
-                game.inventory.push(tms[Math.floor(Math.random() * tms.length)]);
-              }
-            }
-          } else {
-            // Fail - lose a random pokemon
-            if (game.party.length > 1) { // Don't remove last pokemon
-              const removeIndex = Math.floor(Math.random() * game.party.length);
-              game.party.splice(removeIndex, 1);
-            }
-          }
-        }
-      });
     }
     // todo: add more
   }

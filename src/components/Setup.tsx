@@ -1,5 +1,4 @@
 import { GameState } from "@/lib/gameState";
-import { Item } from "@/lib/upgrades";
 import Party from "./Party";
 import Inventory from "./Inventory";
 import { DragEvent } from "react";
@@ -12,7 +11,15 @@ type SetupProps = {
 export default function Setup({game, setGame}: SetupProps) {
   const handleDrop = async (e: DragEvent, pokemonIndex: number) => {
     e.preventDefault();
-    const item: Item = JSON.parse(e.dataTransfer.getData("item"));
+    const droppedItemData = JSON.parse(e.dataTransfer.getData("item"));
+    
+    // Look up the actual item from the inventory using the id
+    const item = game.inventory.find(i => i.id === droppedItemData.id);
+    if (!item) {
+      console.error("Item not found in inventory");
+      return;
+    }
+
     const pokemon = game.party[pokemonIndex];
 
     try {
@@ -32,8 +39,7 @@ export default function Setup({game, setGame}: SetupProps) {
 
       setGame({...game});
     } catch (error) {
-      // Show error message to user
-      alert(error.message);
+      alert((error as Error).message);
     }
   };
 

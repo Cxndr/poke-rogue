@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { GameState, ProperName, LocalMon } from "@/lib/gameState";
+import { GameState, ProperName, LocalMon, resetHP } from "@/lib/gameState";
+import { useEffect } from "react";
 
 type SelectMonProps = {
   game: GameState;
@@ -8,6 +9,12 @@ type SelectMonProps = {
 }
 
 export default function SelectMon({game, setGame, selection}: SelectMonProps) {
+
+  useEffect(() => {
+    for (const mon of selection) {
+      resetHP(mon);
+    }
+  }, [selection]);
   
   async function selectMonClick (pokemon: LocalMon) {
     setGame({

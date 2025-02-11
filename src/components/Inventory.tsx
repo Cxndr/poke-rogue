@@ -9,7 +9,10 @@ type InventoryProps = {
 
 export default function Inventory({ game, setGame }: InventoryProps) {
   const handleDragStart = (e: DragEvent, item: Item) => {
-    e.dataTransfer.setData("item", JSON.stringify(item));
+    e.dataTransfer.setData("item", JSON.stringify({
+      id: item.id,
+      type: item.type
+    }));
   };
 
   return (
