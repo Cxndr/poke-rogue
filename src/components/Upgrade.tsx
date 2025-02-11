@@ -1,5 +1,5 @@
 import { GameState } from "@/lib/gameState";
-import { getRandomUpgrades, Upgrade as UpgradeType } from "@/lib/upgrades";
+import { Upgrade as UpgradeType, getRandomUpgrades } from "@/lib/upgrades";
 import { useState, useEffect } from "react";
 
 type UpgradeProps = {

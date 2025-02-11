@@ -17,6 +17,7 @@ export default function Game() {
     const loadStartingMons = async () => {
       const mons = await Promise.all(getStartingMons());
       setMonSelection(mons);
+      console.log(mons);
     };
     loadStartingMons();
   }, []);
