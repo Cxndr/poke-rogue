@@ -1,5 +1,6 @@
 import { Move, MoveClient, Pokemon, PokemonClient } from "pokenode-ts";
 import { totalPokemon } from "./settings";
+import { Item } from './upgrades';
 const monApi = new PokemonClient();
 const moveApi = new MoveClient();
 
@@ -8,6 +9,7 @@ export type LocalMon = {
   hp: number;
   level: number;
   move: Move;
+  equippedTool?: Item;
 }
 
 type Range<F extends number, T extends number> = Exclude<Enumerate<T>, Enumerate<F>> | F;
@@ -27,6 +29,7 @@ export type GameState = {
   options: Pokemon[];
   round: Range<1,10>;
   fightLog: string[];
+  inventory: Item[];
 }
 
 export const gameState: GameState = {
@@ -34,7 +37,8 @@ export const gameState: GameState = {
   currentState: "startGame",
   options: [],
   round: 1,
-  fightLog: []
+  fightLog: [],
+  inventory: [],
 }
 
 export const startingMons: Pokemon[] = [
