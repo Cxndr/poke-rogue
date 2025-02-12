@@ -1,6 +1,6 @@
 import { Move, MoveClient, Pokemon, PokemonClient } from "pokenode-ts";
 import { totalPokemon, maxRound, maxPartySize } from "./settings";
-import { Item } from './upgrades';
+import { Item, Tool } from './upgrades';
 const monApi = new PokemonClient();
 const moveApi = new MoveClient();
 
@@ -9,7 +9,7 @@ export type LocalMon = {
   hp: number;
   level: number;
   move: Move;
-  equippedTool?: Item;
+  equippedTool?: Tool;
 }
 
 type Range<F extends number, T extends number> = Exclude<Enumerate<T>, Enumerate<F>> | F;

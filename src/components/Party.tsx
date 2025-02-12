@@ -4,9 +4,10 @@ import Image from "next/image";
 type PartyProps = {
   game: GameState;
   onDrop: (e: React.DragEvent<HTMLDivElement>, pokemonIndex: number) => void;
+  onRemoveTool?: (pokemonIndex: number) => void;
 }
 
-export default function Party({game, onDrop}: PartyProps) {
+export default function Party({game, onDrop, onRemoveTool}: PartyProps) {
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
     e.dataTransfer.setData("pokemon", JSON.stringify({
       partyIndex: index,
@@ -42,9 +43,19 @@ export default function Party({game, onDrop}: PartyProps) {
                 />
                 <p>{ProperName(slot.pokemon.data.name)}</p>
                 <p>{ProperName(slot.pokemon.move.name)}</p>
-                <p className="text-sm text-gray-600">
-                  {slot.pokemon.equippedTool ? ProperName(slot.pokemon.equippedTool.name) : "No item"}
-                </p>
+                <div className="flex flex-col items-center">
+                  <p className="text-sm text-gray-600">
+                    {slot.pokemon.equippedTool ? ProperName(slot.pokemon.equippedTool.name) : "No item"}
+                  </p>
+                  {slot.pokemon.equippedTool && onRemoveTool && (
+                    <button 
+                      onClick={() => onRemoveTool(slot.index)}
+                      className="text-xs text-red-500 hover:text-red-700"
+                    >
+                      Remove Tool
+                    </button>
+                  )}
+                </div>
                 <div className="grid grid-cols-4 gap-2 text-right">
                   <span>Lvl: </span><span>{slot.pokemon.level}</span>
                   <span>HP:  </span><span>{getMaxHP(slot.pokemon.data.stats[0].base_stat, slot.pokemon.level)}</span>

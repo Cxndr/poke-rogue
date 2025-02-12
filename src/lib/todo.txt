@@ -1,0 +1,4 @@
+
+- show which tool is equipped to pokemon in storage with icon?
+  - or just auto-remove the tool back to inventory.
+

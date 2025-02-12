@@ -13,12 +13,13 @@ export default function Setup({game, setGame}: SetupProps) {
   const handleItemDrop = async (e: DragEvent, pokemonIndex: number) => {
     e.preventDefault();
     const data = e.dataTransfer.getData("item");
-    if (!data) return; // Not an item drop
+    if (!data) return;
 
     const droppedItemData = JSON.parse(data);
     
     // Look up the actual item from the inventory using the id
-    const item = game.inventory.find(i => i.id === droppedItemData.id);
+    const itemIndex = game.inventory.findIndex(i => i.id === droppedItemData.id);
+    const item = game.inventory[itemIndex];
     if (!item) {
       console.error("Item not found in inventory");
       return;
@@ -28,19 +29,21 @@ export default function Setup({game, setGame}: SetupProps) {
 
     try {
       if (item.type === "tool") {
-        // Remove old tool if exists
-        if (partySlot.pokemon?.equippedTool?.type === "tool") {
-          partySlot.pokemon?.equippedTool.unequip(partySlot.pokemon);
-        }
         if (partySlot.pokemon) {
+          // Remove old tool if exists and return it to inventory
+          if (partySlot.pokemon.equippedTool?.type === "tool") {
+            partySlot.pokemon.equippedTool.unequip(partySlot.pokemon);
+            game.inventory.push(partySlot.pokemon.equippedTool);
+          }
+          // Equip new tool and remove from inventory
           partySlot.pokemon.equippedTool = item;
           item.effect(partySlot.pokemon);
+          game.inventory.splice(itemIndex, 1);
         }
       } else {
         if (partySlot.pokemon) {
           await item.use(partySlot.pokemon);
           // Remove consumed item from inventory
-          const itemIndex = game.inventory.findIndex(i => i.id === item.id);
           game.inventory.splice(itemIndex, 1);
         }
       }
@@ -48,6 +51,17 @@ export default function Setup({game, setGame}: SetupProps) {
       setGame({...game});
     } catch (error) {
       alert((error as Error).message);
+    }
+  };
+
+  const handleRemoveTool = (pokemonIndex: number) => {
+    const partySlot = game.party[pokemonIndex];
+    if (partySlot.pokemon?.equippedTool) {
+      // Remove tool effect and return it to inventory
+      partySlot.pokemon.equippedTool.unequip(partySlot.pokemon);
+      game.inventory.push(partySlot.pokemon.equippedTool);
+      partySlot.pokemon.equippedTool = undefined;
+      setGame({...game});
     }
   };
 
@@ -107,7 +121,8 @@ export default function Setup({game, setGame}: SetupProps) {
           } else {
             handlePokemonDrop(e, index, false);
           }
-        }} 
+        }}
+        onRemoveTool={handleRemoveTool}
       />
       <PokemonStorage 
         game={game} 
