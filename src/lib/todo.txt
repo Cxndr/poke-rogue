@@ -1,5 +1,15 @@
 
 - show which tool is equipped to pokemon in storage with icon?
-  - or just auto-remove the tool back to inventory.
+  - or just auto-remove the tool back to inventory. <-- this!
 
-- make speed calculation algo: currently speed stat is reversed in effectiveness!!
+- show stats on inventory pokemon and selectMon.
+
+- speed seems to be not working correctly. higher speed mon not always attacking faster.
+
+- evolutions!
+  - evolve post battle at required level in api.
+  - "You're pokemon evolved!": display all evolutions at once in a box.
+  - don't use currentState. add a new "evolutions" boolean so that we can trigger from any currentState we may be in.
+
+- balance game rounds: too hard early, too easy late.
+
