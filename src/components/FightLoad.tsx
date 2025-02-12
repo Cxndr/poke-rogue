@@ -18,7 +18,7 @@ export default function FightLoad({game, setGame, setMonSelection}: FightLoadPro
     let enemyCount = 3;
     if (game.round === 1) enemyCount = 1;
     if (game.round === 2) enemyCount = 2;
-    const enemyParty = await getEnemyParty(game.round*5, enemyCount);
+    const enemyParty = await getEnemyParty(game.round*5, enemyCount, game.round);
     setEnemyParty(enemyParty);
     setEnemyLoaded(true);
     setMonSelection(enemyParty);
