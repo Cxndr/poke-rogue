@@ -1,4 +1,4 @@
-import { Move, MoveClient, Pokemon, PokemonClient, Type, EvolutionClient, PokemonSpecies, EvolutionChain } from "pokenode-ts";
+import { Move, MoveClient, Pokemon, PokemonClient, Type, EvolutionClient, PokemonSpecies, EvolutionChain, ChainLink } from "pokenode-ts";
 import { totalPokemon, maxRound, maxPartySize } from "./settings";
 import { Item, Tool } from './upgrades';
 const monApi = new PokemonClient();
@@ -105,21 +105,24 @@ export function setMonLevels(game: GameState) {
 
 async function evolveSingleMon(mon: LocalMon) {
   // should we round down the evolution level to the nearest 5? - test
-  const speciesData = await monApi.getPokemonSpeciesById(mon.data.id);
-  const evolutionChainId = Number(speciesData.evolution_chain.url.split("/").filter(Boolean).pop())
-  const evolutionData = await evoApi.getEvolutionChainById(evolutionChainId);
+  let chainLink: ChainLink;
+  if (mon.evolutionData.chain.species.name === mon.data.name) {
+    chainLink = mon.evolutionData.chain;
+  } else if (mon.evolutionData.chain.evolves_to[0].species.name === mon.data.name) {
+    chainLink = mon.evolutionData.chain.evolves_to[0];
+  } else return null;
 
-  if (evolutionData.chain.evolves_to.length === 0) return;
+  if (chainLink.evolves_to.length === 0) return null;
 
-  const evolutionTrigger = evolutionData.chain.evolves_to[0].evolution_details[0].trigger.name;
+  const evolutionTrigger = chainLink.evolves_to[0].evolution_details[0].trigger.name;
   if (evolutionTrigger === "level-up" || evolutionTrigger === "trade") {
-    if (mon.level >= evolutionData.chain.evolves_to[0].evolution_details[0].min_level!) {
-      const newMon = await monApi.getPokemonByName(evolutionData.chain.evolves_to[0].species.name);
+    if (mon.level >= chainLink.evolves_to[0].evolution_details[0].min_level!) {
+      const newMon = await monApi.getPokemonByName(chainLink.evolves_to[0].species.name);
       const oldMonData = mon.data;
       const newMonData = newMon;
       mon.data = newMon;
       mon.speciesData = await monApi.getPokemonSpeciesById(newMon.id);
-      const evolutionChainId = Number(mon.speciesData.evolution_chain.url.split("/").filter(Boolean).pop())
+      const evolutionChainId = Number(mon.speciesData.evolution_chain.url.split("/").filter(Boolean).pop());
       mon.evolutionData = await evoApi.getEvolutionChainById(evolutionChainId);
       return {oldMonData, newMonData};
     }
@@ -162,6 +165,7 @@ export function finishRound(result: "won" | "lost", game: GameState, setGame: (g
       } as GameState;
       resetParty(updatedGameState);
       setMonLevels(updatedGameState);
+      clearNewEvolutions(updatedGameState);
       evolveMons(updatedGameState);
       setGame(updatedGameState);
     }
@@ -349,7 +353,7 @@ export async function calculateDamage(attacker: LocalMon, target: LocalMon, move
   return {
     damage: damage,
     critical: critical === 2 ? true : false,
-    typeEffectiveness: (Type1 * Type2) === 1 ? "normal" : (Type1 * Type2) === 0.1 ? "super effective" : "not very effective"
+    typeEffectiveness: (Type1 * Type2) <= 1 ? "normal" : (Type1 * Type2) >= 2 ? "super effective" : "not very effective"
   }
 }
 
