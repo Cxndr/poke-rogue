@@ -15,6 +15,7 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
 
   const [fightLogUpdate, setFightLogUpdate] = useState(0);
   const [fightStatus, setFightStatus] = useState<"fighting" | "Won" | "Lost">("fighting");
+  const [attackTimers, setAttackTimers] = useState<{ [key: string]: number }>({});
 
   const faintedClassName = "opacity-30";
 
@@ -32,6 +33,7 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
         setFightLogUpdate,
         setGame,
         true,
+        updateTimer
       );
     });
 
@@ -45,7 +47,8 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
         setFightStatus,
         setFightLogUpdate,
         setGame,
-        false
+        false,
+        updateTimer
       );
     });
 
@@ -69,6 +72,10 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
     game.currentState = "startGame";
     finishRound("lost", game, setGame);
   }
+
+  const updateTimer = (monName: string, timeLeft: number) => {
+    setAttackTimers(prev => ({...prev, [monName]: timeLeft}));
+  };
 
   return (
     <div className="h-full w-full flex flex-row items-center justify-center gap-8">
@@ -95,6 +102,14 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
               <Image src={mon.data.sprites.front_default ?? ""} alt={mon.data.name} width={96} height={96} />
               <p>{ProperName(mon.data.name)}</p>
               <p>{ProperName(mon.move.name)}</p>
+              {attackTimers[mon.data.name] !== undefined && mon.hp > 0 && (
+                <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                  <div 
+                    className="bg-blue-600 h-2.5 rounded-full" 
+                    style={{ width: `${((1 - attackTimers[mon.data.name]) * 100)}%` }}
+                  ></div>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -108,6 +123,14 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
                 <Image src={slot.pokemon.data.sprites.back_default ?? ""} alt={slot.pokemon.data.name} width={96} height={96} />
                 <p>{ProperName(slot.pokemon.data.name)}</p>
                 <p>{ProperName(slot.pokemon.move.name)}</p>
+                {attackTimers[slot.pokemon.data.name] !== undefined && slot.pokemon.hp > 0 && (
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                    <div 
+                      className="bg-blue-600 h-2.5 rounded-full" 
+                      style={{ width: `${((1 - attackTimers[slot.pokemon.data.name]) * 100)}%` }}
+                    ></div>
+                  </div>
+                )}
               </div>
             );
           })}

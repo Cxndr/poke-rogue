@@ -2,3 +2,4 @@
 - show which tool is equipped to pokemon in storage with icon?
   - or just auto-remove the tool back to inventory.
 
+- make speed calculation algo: currently speed stat is reversed in effectiveness!!

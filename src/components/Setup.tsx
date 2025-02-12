@@ -1,8 +1,8 @@
-import { GameState, resetParty } from "@/lib/gameState";
+import { GameState, resetParty, setMonLevels } from "@/lib/gameState";
 import Party from "./Party";
 import Inventory from "./Inventory";
 import PokemonStorage from "./PokemonStorage";
-import { DragEvent } from "react";
+import { DragEvent, useEffect } from "react";
 
 type SetupProps = {
   game: GameState;
@@ -10,6 +10,11 @@ type SetupProps = {
 }
 
 export default function Setup({game, setGame}: SetupProps) {
+
+  useEffect(() => {
+    setMonLevels(game);
+  }, [game]);
+
   const handleItemDrop = async (e: DragEvent, pokemonIndex: number) => {
     e.preventDefault();
     const data = e.dataTransfer.getData("item");

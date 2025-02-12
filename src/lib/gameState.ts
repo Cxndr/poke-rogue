@@ -1,4 +1,4 @@
-import { Move, MoveClient, Pokemon, PokemonClient } from "pokenode-ts";
+import { Move, MoveClient, Pokemon, PokemonClient, Type } from "pokenode-ts";
 import { totalPokemon, maxRound, maxPartySize } from "./settings";
 import { Item, Tool } from './upgrades';
 const monApi = new PokemonClient();
@@ -151,18 +151,61 @@ export function ProperName(name: string) {
   return result;
 }
 
-export function executeAttack(mon: LocalMon, target: LocalMon, game: GameState) {
-  if (!mon.move.power) {
-    return;
+function getTypeEffectiveness(moveTypeData: Type, defenderType: string) {
+  if (moveTypeData.damage_relations.no_damage_to.some(type => type.name === defenderType)) return 0.1;
+  if (moveTypeData.damage_relations.double_damage_to.some(type => type.name === defenderType)) return 2;
+  if (moveTypeData.damage_relations.half_damage_to.some(type => type.name === defenderType)) return 0.5;
+  return 1;
+}
+
+export function calculateAttackTime(speedStat: number) {
+  const normalSpeed = 65; // Define "normal" speed
+  const normalAttackTime = 2000; // milliseconds
+
+  const baseAttackTime = normalAttackTime * (1 + normalSpeed / normalSpeed);
+  const speedModifier = speedStat / normalSpeed;
+  const attackTime = baseAttackTime / (1 + speedModifier);
+
+  return attackTime;
+}
+
+export async function calculateDamage(attacker: LocalMon, target: LocalMon, move: Move) {
+  // using gen 1 formula found here: https://bulbapedia.bulbagarden.net/wiki/Damage
+  const level = attacker.level;
+  const critThreshold = attacker.data.stats[5].base_stat/2;
+  const critRoll = Math.floor(Math.random() * 255);
+  const critical = critRoll < critThreshold ? 2 : 1;
+  const A = move.damage_class?.name === "special" ? attacker.data.stats[3].base_stat : attacker.data.stats[1].base_stat;
+  const D = move.damage_class?.name === "special" ? target.data.stats[4].base_stat : target.data.stats[2].base_stat;
+  const power = move.power ?? 0;
+  const STAB = attacker.data.types.some(type => type.type.name === move.type.name) ? 1.5 : 1;
+  const moveTypeData = await monApi.getTypeByName(move.type.name);
+  const Type1 = getTypeEffectiveness(moveTypeData, target.data.types[0].type.name);
+  const Type2 = target.data.types[1] ? getTypeEffectiveness(moveTypeData, target.data.types[1].type.name) : 1;
+  const random = (Math.floor(Math.random() * 39) + 217) / 255;
+
+  let damage = ((((((2*level*critical)/5)+2) * power * (A/D))/50) + 2) * STAB * Type1 * Type2 * random;
+  if (damage < 1) damage = 1;
+  damage = Math.floor(damage);
+  return {
+    damage: damage,
+    critical: critical === 2 ? true : false,
+    typeEffectiveness: (Type1 * Type2) === 1 ? "normal" : (Type1 * Type2) === 0.1 ? "super effective" : "not very effective"
   }
-  const damage = Math.floor(mon.move.power * mon.level / 50) + 2;
-  target.hp -= damage;
+}
+
+export async function executeAttack(mon: LocalMon, target: LocalMon, game: GameState) {
+  const damageResult = await calculateDamage(mon, target, mon.move);
+  target.hp -= damageResult.damage;
+  
+  game.fightLog.push(`${ProperName(mon.data.name)} used ${ProperName(mon.move.name)} and did ${damageResult.damage} damage to ${ProperName(target.data.name)}. ${damageResult.critical ? "Critical hit!" : ""} ${damageResult.typeEffectiveness !== "normal" ? `It was ${damageResult.typeEffectiveness}!` : ""}`);
+  
   if (target.hp <= 0) {
     target.hp = 0;
     game.fightLog.push(`${ProperName(target.data.name)} fainted!`);
-  } else {
-    game.fightLog.push(`${ProperName(mon.data.name)} used ${ProperName(mon.move.name)} and did ${damage} damage to ${ProperName(target.data.name)}`);
+    return true; // Return true if a Pokemon fainted
   }
+  return false; // Return false if no Pokemon fainted
 }
 
 export function startAttackLoop(
@@ -174,29 +217,65 @@ export function startAttackLoop(
   setFightStatus: (status: "fighting" | "Won" | "Lost") => void,
   setFightLogUpdate: (update: (prev: number) => number) => void,
   setGame: (game: GameState) => void,
-  isPlayerParty: boolean
+  isPlayerParty: boolean,
+  updateTimer: (monName: string, timeLeft: number) => void
 ) {
   if (!attacker) return;
 
-  timeoutRefs[attacker.data.name ?? ""] = setTimeout(() => {
-    if (attacker.hp <= 0) return;
+  // Clear any existing timeout and interval for this attacker
+  if (timeoutRefs[attacker.data.name]) {
+    clearTimeout(timeoutRefs[attacker.data.name]);
+    clearInterval(timeoutRefs[`${attacker.data.name}_interval`]);
+  }
+
+  const attackTime = calculateAttackTime(attacker.data.stats[3].base_stat);
+  const startTime = Date.now();
+
+  // Store the interval reference
+  timeoutRefs[`${attacker.data.name}_interval`] = setInterval(() => {
+    const elapsed = Date.now() - startTime;
+    const timeLeft = Math.max(0, 1 - (elapsed / attackTime));
+    updateTimer(attacker.data.name, timeLeft);
+  }, 50);
+
+  timeoutRefs[attacker.data.name] = setTimeout(async () => {
+    clearInterval(timeoutRefs[`${attacker.data.name}_interval`]);
+    
+    if (attacker.hp <= 0) {
+      updateTimer(attacker.data.name, 0);
+      return;
+    }
     
     const validDefenders = defenders.filter(d => d && d.hp > 0);
+    if (validDefenders.length === 0) {
+      const fightOver = checkIfFightOver(game.party, enemyParty);
+      setFightStatus(fightOver);
+      updateTimer(attacker.data.name, 0);
+      return;
+    }
 
     const target = validDefenders[Math.floor(Math.random() * validDefenders.length)];
     if (!target) return;
-    executeAttack(attacker, target, game);
-    setFightStatus(
-      checkIfFightOver(
-        game.party,
-        enemyParty
-      )
-    );
+    
+    const pokemonFainted = await executeAttack(attacker, target, game);
     setGame({...game});
     setFightLogUpdate(prev => prev + 1);
     
-    startAttackLoop(attacker, defenders, enemyParty, game, timeoutRefs, setFightStatus, setFightLogUpdate, setGame, isPlayerParty);
-  }, attacker.data.stats[3].base_stat * 50);
+    if (pokemonFainted) {
+      const fightOver = checkIfFightOver(game.party, enemyParty);
+      if (fightOver !== "fighting") {
+        setFightStatus(fightOver);
+        Object.keys(timeoutRefs).forEach(key => {
+          clearTimeout(timeoutRefs[key]);
+          clearInterval(timeoutRefs[key]);
+        });
+        updateTimer(attacker.data.name, 0);
+        return;
+      }
+    }
+    
+    startAttackLoop(attacker, defenders, enemyParty, game, timeoutRefs, setFightStatus, setFightLogUpdate, setGame, isPlayerParty, updateTimer);
+  }, attackTime);
 }
 
 export async function newLocalMon(pokemon: Pokemon) {
