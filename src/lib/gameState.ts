@@ -198,14 +198,16 @@ export async function executeAttack(mon: LocalMon, target: LocalMon, game: GameS
   const damageResult = await calculateDamage(mon, target, mon.move);
   target.hp -= damageResult.damage;
   
-  game.fightLog.push(`${ProperName(mon.data.name)} used ${ProperName(mon.move.name)} and did ${damageResult.damage} damage to ${ProperName(target.data.name)}. ${damageResult.critical ? "Critical hit!" : ""} ${damageResult.typeEffectiveness !== "normal" ? `It was ${damageResult.typeEffectiveness}!` : ""}`);
+  game.fightLog.push(
+    `${ProperName(mon.data.name)} used ${ProperName(mon.move.name)} and did ${damageResult.damage} damage to ${ProperName(target.data.name)}. ${damageResult.critical ? "Critical hit!" : ""} ${damageResult.typeEffectiveness !== "normal" ? `It was ${damageResult.typeEffectiveness}!` : ""}`
+  );
   
   if (target.hp <= 0) {
     target.hp = 0;
     game.fightLog.push(`${ProperName(target.data.name)} fainted!`);
-    return true; // Return true if a Pokemon fainted
+    return true;
   }
-  return false; // Return false if no Pokemon fainted
+  return false;
 }
 
 export function startAttackLoop(
@@ -246,7 +248,13 @@ export function startAttackLoop(
       return;
     }
     
-    const validDefenders = defenders.filter(d => d && d.hp > 0);
+    // Filter out the attacker itself from valid targets if they're the same Pokemon
+    const validDefenders = defenders.filter(d => 
+      d && 
+      d.hp > 0 && 
+      !(isPlayerParty && d === attacker) // Ensure we don't target ourselves
+    );
+
     if (validDefenders.length === 0) {
       const fightOver = checkIfFightOver(game.party, enemyParty);
       setFightStatus(fightOver);
