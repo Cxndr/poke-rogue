@@ -297,11 +297,13 @@ export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
   const upgrades: Upgrade[] = [];
   const usedUpgrades = new Set<string>(); // Track used upgrades by name
   
-  // Keep trying until we have enough unique upgrades
+  // Get count of filled party slots
+  const filledSlots = game.party.filter(slot => slot.pokemon !== null).length;
+  
   while (upgrades.length < count) {
     const roll = Math.random();
     
-    if (roll < 0.6) { // 60% chance for item
+    if (roll < 0.6) {
       const itemRoll = Math.random();
       if (itemRoll < 0.4) { // 40% chance for vitamin
         const vitamin = vitamins[Math.floor(Math.random() * vitamins.length)];
@@ -344,7 +346,7 @@ export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
           });
         }
       }
-    } else if (roll < 0.75 && game.party.length > 1) { // Only show Team Rocket if party > 1
+    } else if (roll < 0.75 && filledSlots > 1) {
       if (!usedUpgrades.has("Team Rocket Deal")) {
         usedUpgrades.add("Team Rocket Deal");
         upgrades.push({
@@ -366,10 +368,9 @@ export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
                 }
               }
             } else {
-              // Fail - completely remove a random pokemon
+              // Fail - remove a random pokemon from party
               handleTeamRocketFailure(game);
             }
-            // Always go to setup after Team Rocket encounter
             game.currentState = "setup";
           }
         });

@@ -56,14 +56,31 @@ export function resetParty(game: GameState) {
     }
   });
 }
+export function setMonLevels(game: GameState) {
+  game.party.forEach(slot => {
+    if (slot.pokemon) {
+      slot.pokemon.level = game.round*5;
+    }
+  });
+  game.pokemonStorage.forEach(mon => {
+    mon.level = game.round*5;
+  });
+}
 
 export function finishRound(result: "won" | "lost", game: GameState, setGame: (game: GameState) => void) {
   if (result === "won") {
     if (game.round >= maxRound) {
       setGame({...game, currentState: "gameComplete"});
     } else {
-      setGame({...game, currentState: "selectMon", round: (game.round + 1) as Range<1, typeof maxRound>, fightLog: []});
-      resetParty(game);
+      const updatedGameState = {
+        ...game,
+        currentState: "selectMon",
+        round: (game.round + 1) as Range<1, typeof maxRound>,
+        fightLog: []
+      } as GameState;
+      resetParty(updatedGameState);
+      setMonLevels(updatedGameState);
+      setGame(updatedGameState);
     }
   } else {
     setGame({...game, currentState: "startGame"});
