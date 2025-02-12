@@ -283,7 +283,17 @@ async function createTMUseFunction(moveName: string): Promise<(pokemon: LocalMon
   };
 }
 
-export function getRandomUpgrades(count: number): Upgrade[] {
+const handleTeamRocketFailure = (game: GameState) => {
+  const filledSlots = game.party.filter(slot => slot.pokemon !== null);
+  if (filledSlots.length > 1) {
+    // Remove pokemon from a random filled slot
+    const filledSlot = filledSlots[Math.floor(Math.random() * filledSlots.length)];
+    filledSlot.pokemon = null;
+    game.currentState = "setup";
+  }
+};
+
+export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
   const upgrades: Upgrade[] = [];
   const usedUpgrades = new Set<string>(); // Track used upgrades by name
   
@@ -334,7 +344,7 @@ export function getRandomUpgrades(count: number): Upgrade[] {
           });
         }
       }
-    } else if (roll < 0.75) { // 15% chance for Team Rocket
+    } else if (roll < 0.75 && game.party.length > 1) { // Only show Team Rocket if party > 1
       if (!usedUpgrades.has("Team Rocket Deal")) {
         usedUpgrades.add("Team Rocket Deal");
         upgrades.push({
@@ -356,12 +366,11 @@ export function getRandomUpgrades(count: number): Upgrade[] {
                 }
               }
             } else {
-              // Fail - lose a random pokemon
-              if (game.party.length > 1) { // Don't remove last pokemon
-                const removeIndex = Math.floor(Math.random() * game.party.length);
-                game.party.splice(removeIndex, 1);
-              }
+              // Fail - completely remove a random pokemon
+              handleTeamRocketFailure(game);
             }
+            // Always go to setup after Team Rocket encounter
+            game.currentState = "setup";
           }
         });
       }

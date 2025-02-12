@@ -11,8 +11,8 @@ export default function Upgrade({game, setGame}: UpgradeProps) {
   const [upgrades, setUpgrades] = useState<UpgradeType[]>([]);
 
   useEffect(() => {
-    setUpgrades(getRandomUpgrades(3));
-  }, []);
+    setUpgrades(getRandomUpgrades(3, game));
+  }, [game]);
 
   const handleUpgradeSelect = async (upgrade: UpgradeType) => {
     await upgrade.execute(game);

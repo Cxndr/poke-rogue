@@ -17,9 +17,16 @@ export default function SelectMon({game, setGame, selection}: SelectMonProps) {
   }, [selection]);
   
   async function selectMonClick (pokemon: LocalMon) {
+    const newGame = { ...game };
+    // Find first empty slot
+    const emptySlot = newGame.party.find(slot => slot.pokemon === null);
+    if (emptySlot) {
+      emptySlot.pokemon = pokemon;
+    } else {
+      newGame.pokemonStorage.push(pokemon);
+    }
     setGame({
-      ...game,
-      party: [...game.party, pokemon],
+      ...newGame,
       currentState: "upgrade"
     });
   }

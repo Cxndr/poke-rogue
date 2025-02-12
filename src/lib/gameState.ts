@@ -1,5 +1,5 @@
 import { Move, MoveClient, Pokemon, PokemonClient } from "pokenode-ts";
-import { totalPokemon } from "./settings";
+import { totalPokemon, maxRound, maxPartySize } from "./settings";
 import { Item } from './upgrades';
 const monApi = new PokemonClient();
 const moveApi = new MoveClient();
@@ -17,8 +17,13 @@ type Enumerate<N extends number, Acc extends number[] = []> = Acc['length'] exte
   ? Acc[number]
   : Enumerate<N, [...Acc, Acc['length']]>;
 
+export type PartySlot = {
+  pokemon: LocalMon | null;
+  index: number;
+}
+
 export type GameState = {
-  party: LocalMon[];
+  party: PartySlot[];
   currentState: 
   "startGame" | 
   "selectMon" |  
@@ -28,32 +33,36 @@ export type GameState = {
   "gameComplete" |
   "gameOver";
   options: Pokemon[];
-  round: Range<1,10>;
+  round: Range<1, typeof maxRound>;
   fightLog: string[];
   inventory: Item[];
+  pokemonStorage: LocalMon[];
 }
 
 export const gameState: GameState = {
-  party: [],
+  party: Array(maxPartySize).fill(null).map((_, i) => ({ pokemon: null, index: i })),
   currentState: "startGame",
   options: [],
   round: 1,
   fightLog: [],
   inventory: [],
+  pokemonStorage: [],
 }
 
 export function resetParty(game: GameState) {
-  game.party.forEach(mon => {
-    resetHP(mon);
+  game.party.forEach(slot => {
+    if (slot.pokemon) {
+      resetHP(slot.pokemon);
+    }
   });
 }
 
 export function finishRound(result: "won" | "lost", game: GameState, setGame: (game: GameState) => void) {
   if (result === "won") {
-    if (game.round >= 10) {
+    if (game.round >= maxRound) {
       setGame({...game, currentState: "gameComplete"});
     } else {
-      setGame({...game, currentState: "selectMon", round: (game.round + 1) as Range<1,10>, fightLog: []});
+      setGame({...game, currentState: "selectMon", round: (game.round + 1) as Range<1, typeof maxRound>, fightLog: []});
       resetParty(game);
     }
   } else {
@@ -142,6 +151,10 @@ export async function newLocalMon(pokemon: Pokemon) {
   }
 }
 
-export function checkIfPartyDefeated(party: LocalMon[]) {
+export function checkIfPartyDefeated(party: PartySlot[]) {
+  return party.every(slot => !slot.pokemon || slot.pokemon.hp <= 0);
+}
+
+export function checkIfEnemyPartyDefeated(party: LocalMon[]) {
   return party.every(mon => mon.hp <= 0);
 }

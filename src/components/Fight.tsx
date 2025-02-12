@@ -1,4 +1,4 @@
-import { checkIfPartyDefeated, executeAttack, finishRound, GameState, getMaxHP, LocalMon, ProperName } from "@/lib/gameState";
+import { checkIfEnemyPartyDefeated, executeAttack, finishRound, GameState, getMaxHP, LocalMon, ProperName } from "@/lib/gameState";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
@@ -19,22 +19,24 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
   const faintedClassName = "opacity-30";
 
   useEffect(() => {
-    game.party.forEach((mon) => {
+    game.party.forEach((slot) => {
+      if (!slot.pokemon) return;
       const startAttackLoop = () => {
-        if (mon.hp <= 0) return;
-
-        timeoutRefs.current[mon.data.name] = setTimeout(() => {
+        if (!slot.pokemon) return;
+        if (slot.pokemon?.hp <= 0) return;
+        timeoutRefs.current[slot.pokemon?.data.name ?? ""] = setTimeout(() => {
           const targetParty = enemyParty.filter(p => p.hp > 0);
           const target = targetParty[Math.floor(Math.random() * targetParty.length)];
-          executeAttack(mon, target, game);
-          if (checkIfPartyDefeated(targetParty)) {
+          if (!slot.pokemon) return;
+          executeAttack(slot.pokemon, target, game);
+          if (checkIfEnemyPartyDefeated(targetParty)) {
             setFightStatus("Won");
           } else {
             setGame({...game});
             setFightLogUpdate(prev => prev + 1);
             startAttackLoop();
           }
-        }, mon.data.stats[3].base_stat * 100);
+        }, slot.pokemon?.data.stats[3].base_stat * 10); // 100
       };
 
       startAttackLoop();
@@ -93,14 +95,17 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
         </div>
 
         <div className="flex flex-row gap-4">
-          {game.party.map((mon, index) => (
-            <div key={index} className={`flex flex-col items-center justify-center ${mon.hp <= 0 && faintedClassName}`}>
-            <p>Lvl: {mon.level} HP: {mon.hp}/{getMaxHP(mon.data.stats[0].base_stat, mon.level)}</p>
-            <Image src={mon.data.sprites.back_default ?? ""} alt={mon.data.name} width={96} height={96} />
-            <p>{ProperName(mon.data.name)}</p>
-            <p>{ProperName(mon.move.name)}</p>
-          </div>
-          ))}
+          {game.party.map((slot, index) => {
+            if (!slot.pokemon) return null;  // Skip empty slots
+            return (
+              <div key={index} className={`flex flex-col items-center justify-center ${slot.pokemon.hp <= 0 && faintedClassName}`}>
+                <p>Lvl: {slot.pokemon.level} HP: {slot.pokemon.hp}/{getMaxHP(slot.pokemon.data.stats[0].base_stat, slot.pokemon.level)}</p>
+                <Image src={slot.pokemon.data.sprites.back_default ?? ""} alt={slot.pokemon.data.name} width={96} height={96} />
+                <p>{ProperName(slot.pokemon.data.name)}</p>
+                <p>{ProperName(slot.pokemon.move.name)}</p>
+              </div>
+            );
+          })}
         </div>
 
       </div>
