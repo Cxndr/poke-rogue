@@ -1,4 +1,4 @@
-import { checkIfEnemyPartyDefeated, executeAttack, finishRound, GameState, getMaxHP, LocalMon, ProperName } from "@/lib/gameState";
+import { finishRound, GameState, getMaxHP, LocalMon, ProperName, startAttackLoop } from "@/lib/gameState";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
@@ -19,34 +19,38 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
   const faintedClassName = "opacity-30";
 
   useEffect(() => {
-    game.party.forEach((slot) => {
-      if (!slot.pokemon) return;
-      const startAttackLoop = () => {
-        if (!slot.pokemon) return;
-        if (slot.pokemon?.hp <= 0) return;
-        timeoutRefs.current[slot.pokemon?.data.name ?? ""] = setTimeout(() => {
-          const targetParty = enemyParty.filter(p => p.hp > 0);
-          const target = targetParty[Math.floor(Math.random() * targetParty.length)];
-          if (!slot.pokemon) return;
-          executeAttack(slot.pokemon, target, game);
-          if (checkIfEnemyPartyDefeated(targetParty)) {
-            setFightStatus("Won");
-          } else {
-            setGame({...game});
-            setFightLogUpdate(prev => prev + 1);
-            startAttackLoop();
-          }
-        }, slot.pokemon?.data.stats[3].base_stat * 10); // 100
-      };
 
-      startAttackLoop();
+    game.party.forEach(slot => {
+      if (!slot.pokemon) return;
+      startAttackLoop(
+        slot.pokemon,
+        enemyParty,
+        enemyParty,
+        game,
+        timeoutRefs.current,
+        setFightStatus,
+        setFightLogUpdate,
+        setGame,
+        true,
+      );
     });
 
-    // clear all timeouts when component unmounts
+    enemyParty.forEach(mon => {
+      startAttackLoop(
+        mon,
+        game.party.map(slot => slot.pokemon),
+        enemyParty,
+        game,
+        timeoutRefs.current,
+        setFightStatus,
+        setFightLogUpdate,
+        setGame,
+        false
+      );
+    });
+
     return () => {
-      Object.values(timeoutRefs.current).forEach(timeout => {
-        clearTimeout(timeout);
-      });
+      Object.values(timeoutRefs.current).forEach(clearTimeout);
       timeoutRefs.current = {};
     };
   }, []);
@@ -62,6 +66,7 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
   }
 
   const fightLost = () => {
+    game.currentState = "startGame";
     finishRound("lost", game, setGame);
   }
 

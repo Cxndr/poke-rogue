@@ -39,14 +39,27 @@ export type GameState = {
   pokemonStorage: LocalMon[];
 }
 
-export const gameState: GameState = {
-  party: Array(maxPartySize).fill(null).map((_, i) => ({ pokemon: null, index: i })),
-  currentState: "startGame",
-  options: [],
-  round: 1,
-  fightLog: [],
-  inventory: [],
-  pokemonStorage: [],
+export function createInitialGameState(): GameState {
+  return {
+    party: Array(maxPartySize).fill(null).map((_, i) => ({ pokemon: null, index: i })),
+    currentState: "startGame",
+    options: [],
+    round: 1,
+    fightLog: [],
+    inventory: [],
+    pokemonStorage: []
+  };
+}
+
+export const gameState: GameState = createInitialGameState();
+
+
+export function getMaxHP(baseHP: number, level: number) {
+  return Math.floor( (2 * baseHP + 8) * level / 100 ) + level + 10;
+}
+
+export function resetHP(mon: LocalMon) {
+  mon.hp = getMaxHP(mon.data.stats[0].base_stat, mon.level);
 }
 
 export function resetParty(game: GameState) {
@@ -56,6 +69,7 @@ export function resetParty(game: GameState) {
     }
   });
 }
+
 export function setMonLevels(game: GameState) {
   game.party.forEach(slot => {
     if (slot.pokemon) {
@@ -82,8 +96,8 @@ export function finishRound(result: "won" | "lost", game: GameState, setGame: (g
       setMonLevels(updatedGameState);
       setGame(updatedGameState);
     }
-  } else {
-    setGame({...game, currentState: "startGame"});
+  } else if (result === "lost") {
+    setGame(createInitialGameState());
   }
 }
 
@@ -137,14 +151,6 @@ export function ProperName(name: string) {
   return result;
 }
 
-export function getMaxHP(baseHP: number, level: number) {
-  return Math.floor( (2 * baseHP + 8) * level / 100 ) + level + 10;
-}
-
-export function resetHP(mon: LocalMon) {
-  mon.hp = getMaxHP(mon.data.stats[0].base_stat, mon.level);
-}
-
 export function executeAttack(mon: LocalMon, target: LocalMon, game: GameState) {
   if (!mon.move.power) {
     return;
@@ -159,6 +165,40 @@ export function executeAttack(mon: LocalMon, target: LocalMon, game: GameState) 
   }
 }
 
+export function startAttackLoop(
+  attacker: LocalMon | null,
+  defenders: (LocalMon | null)[],
+  enemyParty: LocalMon[],
+  game: GameState,
+  timeoutRefs: { [key: string]: NodeJS.Timeout },
+  setFightStatus: (status: "fighting" | "Won" | "Lost") => void,
+  setFightLogUpdate: (update: (prev: number) => number) => void,
+  setGame: (game: GameState) => void,
+  isPlayerParty: boolean
+) {
+  if (!attacker) return;
+
+  timeoutRefs[attacker.data.name ?? ""] = setTimeout(() => {
+    if (attacker.hp <= 0) return;
+    
+    const validDefenders = defenders.filter(d => d && d.hp > 0);
+
+    const target = validDefenders[Math.floor(Math.random() * validDefenders.length)];
+    if (!target) return;
+    executeAttack(attacker, target, game);
+    setFightStatus(
+      checkIfFightOver(
+        game.party,
+        enemyParty
+      )
+    );
+    setGame({...game});
+    setFightLogUpdate(prev => prev + 1);
+    
+    startAttackLoop(attacker, defenders, enemyParty, game, timeoutRefs, setFightStatus, setFightLogUpdate, setGame, isPlayerParty);
+  }, attacker.data.stats[3].base_stat * 50);
+}
+
 export async function newLocalMon(pokemon: Pokemon) {
   return {
     data: pokemon,
@@ -168,10 +208,12 @@ export async function newLocalMon(pokemon: Pokemon) {
   }
 }
 
-export function checkIfPartyDefeated(party: PartySlot[]) {
-  return party.every(slot => !slot.pokemon || slot.pokemon.hp <= 0);
-}
-
-export function checkIfEnemyPartyDefeated(party: LocalMon[]) {
-  return party.every(mon => mon.hp <= 0);
+export function checkIfFightOver(party: PartySlot[], enemyParty: LocalMon[]) {
+  if (enemyParty.every(mon => mon.hp <= 0)) {
+    return "Won";
+  }
+  if (party.every(slot => !slot.pokemon || slot.pokemon.hp <= 0)) {
+    return "Lost";
+  }
+  return "fighting";
 }

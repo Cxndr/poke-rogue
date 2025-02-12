@@ -1,4 +1,4 @@
-import { GameState } from "@/lib/gameState";
+import { GameState, resetParty } from "@/lib/gameState";
 import Party from "./Party";
 import Inventory from "./Inventory";
 import PokemonStorage from "./PokemonStorage";
@@ -108,6 +108,11 @@ export default function Setup({game, setGame}: SetupProps) {
     setGame(newGame);
   };
 
+  const handleFightClick = () => {
+    resetParty(game);
+    setGame({...game, currentState: "fight"});
+  }
+
   return (
     <div className="h-full p-8 flex flex-col items-center justify-between gap-4">
       <h2>Round {game.round}</h2>
@@ -129,7 +134,7 @@ export default function Setup({game, setGame}: SetupProps) {
         onDrop={(e, index) => handlePokemonDrop(e, index, true)} 
       />
       <button 
-        onClick={() => setGame({...game, currentState: "fight"})}
+        onClick={handleFightClick}
         disabled={game.party.length === 0}
         className={`px-4 py-2 rounded ${game.party.length === 0 ? 'bg-gray-300' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
       >
