@@ -1,8 +1,9 @@
-import { Move, MoveClient, Pokemon, PokemonClient, Type } from "pokenode-ts";
+import { Move, MoveClient, Pokemon, PokemonClient, Type, EvolutionClient, PokemonSpecies, EvolutionChain } from "pokenode-ts";
 import { totalPokemon, maxRound, maxPartySize } from "./settings";
 import { Item, Tool } from './upgrades';
 const monApi = new PokemonClient();
 const moveApi = new MoveClient();
+const evoApi = new EvolutionClient();
 
 export type LocalMon = {
   data: Pokemon;
@@ -10,6 +11,25 @@ export type LocalMon = {
   level: number;
   move: Move;
   equippedTool?: Tool;
+  speciesData: PokemonSpecies;
+  evolutionData: EvolutionChain;
+  statBoosts: {
+    hp: number;
+    attack: number;
+    defense: number;
+    spAttack: number;
+    spDefense: number;
+    speed: number;
+  }
+}
+
+export const blankStatBoosts = {
+  hp: 0,
+  attack: 0,
+  defense: 0,
+  spAttack: 0,
+  spDefense: 0,
+  speed: 0
 }
 
 type Range<F extends number, T extends number> = Exclude<Enumerate<T>, Enumerate<F>> | F;
@@ -37,6 +57,7 @@ export type GameState = {
   fightLog: string[];
   inventory: Item[];
   pokemonStorage: LocalMon[];
+  newEvolutions: {oldMonData: Pokemon, newMonData: Pokemon}[];
 }
 
 export function createInitialGameState(): GameState {
@@ -47,7 +68,8 @@ export function createInitialGameState(): GameState {
     round: 1,
     fightLog: [],
     inventory: [],
-    pokemonStorage: []
+    pokemonStorage: [],
+    newEvolutions: []
   };
 }
 
@@ -81,6 +103,52 @@ export function setMonLevels(game: GameState) {
   });
 }
 
+async function evolveSingleMon(mon: LocalMon) {
+  // should we round down the evolution level to the nearest 5? - test
+  const speciesData = await monApi.getPokemonSpeciesById(mon.data.id);
+  const evolutionChainId = Number(speciesData.evolution_chain.url.split("/").filter(Boolean).pop())
+  const evolutionData = await evoApi.getEvolutionChainById(evolutionChainId);
+
+  if (evolutionData.chain.evolves_to.length === 0) return;
+
+  const evolutionTrigger = evolutionData.chain.evolves_to[0].evolution_details[0].trigger.name;
+  if (evolutionTrigger === "level-up" || evolutionTrigger === "trade") {
+    if (mon.level >= evolutionData.chain.evolves_to[0].evolution_details[0].min_level!) {
+      const newMon = await monApi.getPokemonByName(evolutionData.chain.evolves_to[0].species.name);
+      const oldMonData = mon.data;
+      const newMonData = newMon;
+      mon.data = newMon;
+      mon.speciesData = await monApi.getPokemonSpeciesById(newMon.id);
+      const evolutionChainId = Number(mon.speciesData.evolution_chain.url.split("/").filter(Boolean).pop())
+      mon.evolutionData = await evoApi.getEvolutionChainById(evolutionChainId);
+      return {oldMonData, newMonData};
+    }
+  }
+  // todo: evolution check for other evolution methods (stone, etc)
+  return null;
+}
+
+export async function evolveMons(game: GameState) {
+  for (const slot of game.party) {
+    if (slot.pokemon) {
+      const result = await evolveSingleMon(slot.pokemon);
+      if (result) {
+        game.newEvolutions.push(result);
+      }
+    }
+  }
+  for (const mon of game.pokemonStorage) {
+    const result = await evolveSingleMon(mon);
+    if (result) {
+      game.newEvolutions.push(result);
+    }
+  }
+}
+
+export function clearNewEvolutions(game: GameState) {
+  game.newEvolutions = [];
+}
+
 export function finishRound(result: "won" | "lost", game: GameState, setGame: (game: GameState) => void) {
   if (result === "won") {
     if (game.round >= maxRound) {
@@ -94,6 +162,7 @@ export function finishRound(result: "won" | "lost", game: GameState, setGame: (g
       } as GameState;
       resetParty(updatedGameState);
       setMonLevels(updatedGameState);
+      evolveMons(updatedGameState);
       setGame(updatedGameState);
     }
   } else if (result === "lost") {
@@ -101,16 +170,19 @@ export function finishRound(result: "won" | "lost", game: GameState, setGame: (g
   }
 }
 
-export const startingMons: Pokemon[] = [
-  await monApi.getPokemonByName("bulbasaur"),
-  await monApi.getPokemonByName("squirtle"),
-  await monApi.getPokemonByName("charmander"),
-  await monApi.getPokemonByName("pikachu"),
-  await monApi.getPokemonByName("eevee"),
-];
+const startingMonNames = [
+  "bulbasaur",
+  "squirtle",
+  "charmander",
+  "pikachu",
+  "eevee",
+]
 
-export function getStartingMons() {
-  return startingMons.map(mon => newLocalMon(mon));
+export async function getStartingMons() {
+  const startingMons = await Promise.all(
+    startingMonNames.map(name => monApi.getPokemonByName(name))
+  );
+  return Promise.all(startingMons.map(mon => newLocalMon(mon)));
 }
 
 export async function getRandomMove(pokemon: Pokemon) {
@@ -223,7 +295,10 @@ export async function getEnemyParty(level: number, count: number, round: number)
   for (let i = 0; i < count; i++) {
     const mon = await getEnemyMon(round);
     const move = await getRandomMove(mon);
-    eParty.push({data: mon, level: level, move: move, hp: getMaxHP(mon.stats[0].base_stat, level)});
+    const speciesData = await monApi.getPokemonSpeciesById(mon.id); 
+    const evolutionChainId = Number(speciesData.evolution_chain.url.split("/").filter(Boolean).pop())
+    const evolutionData = await evoApi.getEvolutionChainById(evolutionChainId);
+    eParty.push({data: mon, level: level, move: move, hp: getMaxHP(mon.stats[0].base_stat, level), speciesData: speciesData, evolutionData: evolutionData, statBoosts: blankStatBoosts});
   }
   return eParty;
 }
@@ -371,11 +446,19 @@ export function startAttackLoop(
 }
 
 export async function newLocalMon(pokemon: Pokemon) {
+  const speciesData = await monApi.getPokemonSpeciesById(pokemon.id);
+  console.log("SPECIES DATA FOR:", pokemon.name, speciesData);
+  const evolutionChainId = Number(speciesData.evolution_chain.url.split("/").filter(Boolean).pop())
+  const evolutionData = await evoApi.getEvolutionChainById(evolutionChainId);
+
   return {
     data: pokemon,
     hp: getMaxHP(pokemon.stats[0].base_stat, 5),
     level: 5,
-    move: await getRandomMove(pokemon)
+    move: await getRandomMove(pokemon),
+    statBoosts: blankStatBoosts,
+    speciesData: speciesData,
+    evolutionData: evolutionData
   }
 }
 

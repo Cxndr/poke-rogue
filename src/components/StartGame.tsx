@@ -15,9 +15,8 @@ export default function StartGame({game, setGame, monSelection, setMonSelection}
 
   useEffect(() => {
     const loadStartingMons = async () => {
-      const mons = await Promise.all(getStartingMons());
+      const mons = await getStartingMons();
       setMonSelection(mons);
-      console.log(mons);
     };
     loadStartingMons();
   }, []);

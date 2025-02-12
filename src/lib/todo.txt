@@ -13,3 +13,4 @@
 
 - balance game rounds: too hard early, too easy late.
 
+- fix evolution: pokemon are evolving down! and also not evolving and always showing evolutions (not clearing correctly in NewEvolutions.tsx??)
