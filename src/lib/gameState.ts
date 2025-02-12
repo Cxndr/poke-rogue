@@ -147,8 +147,8 @@ const enemyMonsRound1 = [
 ]
 
 const enemyMonsRound2 = [
-  {mon: "rattata", chance: 15},
-  {mon: "pidgey", chance: 15},
+  {mon: "rattata", chance: 25},
+  {mon: "pidgey", chance: 25},
   {mon: "pidgeotto", chance: 5},
   {mon: "pikachu", chance: 5},
   {mon: "spearow", chance: 25},
@@ -160,20 +160,22 @@ const enemyMonsRound2 = [
   {mon: "butterfree", chance: 5},
   {mon: "ekans", chance: 5},
   {mon: "nidoran-f", chance: 15},
-  {mon: "nidoran-m", chance: 15},
-  {mon: "vulpix", chance: 5},
-  {mon: "jigglypuff", chance: 20},
-  {mon: "zubat", chance: 30},
-  {mon: "geodude", chance: 20},
-  {mon: "oddish", chance: 15},
-  {mon: "paras", chance: 20},
-  {mon: "magikarp", chance: 5},
-  {mon: "mr-mime", chance: 1},
-  {mon: "diglett", chance: 10},
-  {mon: "mankey", chance: 10}
+  {mon: "nidoran-m", chance: 15}
 ]
 
 const enemyMonsRound3 = [
+  {mon: "vulpix", chance: 15},
+  {mon: "jigglypuff", chance: 25},
+  {mon: "zubat", chance: 30},
+  {mon: "geodude", chance: 20},
+  {mon: "oddish", chance: 20},
+  {mon: "paras", chance: 25},
+  {mon: "magikarp", chance: 10},
+  {mon: "mr-mime", chance: 1},
+  {mon: "diglett", chance: 15},
+  {mon: "mankey", chance: 15}
+]
+const enemyMonsRound4 = [
   {mon: "sandshrew", chance: 40},
   {mon: "clefairy", chance: 30},
   {mon: "magikarp", chance: 25},
@@ -198,14 +200,17 @@ export function getMonFromChanceList(list: {mon: string, chance: number}[]) {
 }
 
 export async function getEnemyMon(round: number) {
-  if (round === 1) {
+  if (round === 1 || round === 2) {
     const monName = getMonFromChanceList(enemyMonsRound1);
     return await monApi.getPokemonByName(monName);
-  } else if (round === 2) {
+  } else if (round === 3 || round === 4) {
     const monName = getMonFromChanceList(enemyMonsRound2);
     return await monApi.getPokemonByName(monName);
   } else if (round === 3) {
     const monName = getMonFromChanceList(enemyMonsRound2.concat(enemyMonsRound3));
+    return await monApi.getPokemonByName(monName);
+  } else if (round === 4) {
+    const monName = getMonFromChanceList(enemyMonsRound2.concat(enemyMonsRound3).concat(enemyMonsRound4));
     return await monApi.getPokemonByName(monName);
   }
   
