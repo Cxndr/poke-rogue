@@ -101,8 +101,8 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
               <p>Lvl: {mon.level} HP: {mon.hp}/{getMaxHP(mon.data.stats[0].base_stat, mon.level)}</p>
               <Image src={mon.data.sprites.front_default ?? ""} alt={mon.data.name} width={96} height={96} />
               <p>{ProperName(mon.data.name)}</p>
-              <p>{ProperName(mon.move.name)}</p>
-              {attackTimers[mon.data.name] !== undefined && mon.hp > 0 && (
+              {mon.move?.name && <p>{ProperName(mon.move.name)}</p>}
+              {mon.data?.name && attackTimers[mon.data.name] !== undefined && mon.hp > 0 && (
                 <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                   <div 
                     className="bg-blue-600 h-2.5 rounded-full" 
@@ -122,8 +122,8 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
                 <p>Lvl: {slot.pokemon.level} HP: {slot.pokemon.hp}/{getMaxHP(slot.pokemon.data.stats[0].base_stat, slot.pokemon.level)}</p>
                 <Image src={slot.pokemon.data.sprites.back_default ?? ""} alt={slot.pokemon.data.name} width={96} height={96} />
                 <p>{ProperName(slot.pokemon.data.name)}</p>
-                <p>{ProperName(slot.pokemon.move.name)}</p>
-                {attackTimers[slot.pokemon.data.name] !== undefined && slot.pokemon.hp > 0 && (
+                {slot.pokemon.move?.name && <p>{ProperName(slot.pokemon.move.name)}</p>}
+                {slot.pokemon.data?.name && attackTimers[slot.pokemon.data.name] !== undefined && slot.pokemon.hp > 0 && (
                   <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
                     <div 
                       className="bg-blue-600 h-2.5 rounded-full" 

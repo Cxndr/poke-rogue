@@ -26,7 +26,6 @@
 
 import { Move, MachineClient, MoveClient } from "pokenode-ts";
 import { GameState, LocalMon, ProperName } from "./gameState";
-import { tmCount } from "./settings";
 
 const machineApi = new MachineClient();
 const moveApi = new MoveClient();
@@ -317,9 +316,9 @@ export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
             }
           });
         }
-      } else { // 30% chance for TM
+      } else if (tms.length > 0) { // 30% chance for TM, only if TMs are loaded
         const tm = tms[Math.floor(Math.random() * tms.length)];
-        if (!usedUpgrades.has(tm.name)) {
+        if (tm && !usedUpgrades.has(tm.name)) {
           usedUpgrades.add(tm.name);
           upgrades.push({
             type: "item",
@@ -383,40 +382,68 @@ async function createTMUseFunction(moveName: string): Promise<(pokemon: LocalMon
   };
 }
 
-const TMBlacklist = 
-  [3,4,6,7,18,19,23,27,30,31,32,33,34,35,41,44,45,46,50]
+const TMBlacklist = [
+  'tm03', 'tm04', 'tm06', 'tm07', 'tm18', 'tm19', 
+  'tm23', 'tm27', 'tm30', 'tm31', 'tm32', 'tm33', 
+  'tm34', 'tm35', 'tm41', 'tm44', 'tm45', 'tm46', 'tm50'
+];
 
 export async function getRandomItemTM() {
-  const maxId = tmCount;
-  const validIds = [];
-  for (let i = 0; i < maxId; i++) {
-    if (TMBlacklist.includes(i)) continue;
-    validIds.push(i);
+  if (tms.length === 0) {
+    await initializeGame();
   }
-  const randomId = validIds[Math.floor(Math.random() * validIds.length)];
-  const machine = await machineApi.getMachineById(randomId);
-  return machine;
+  const randomTM = tms[Math.floor(Math.random() * tms.length)];
+  return randomTM;
 }
 
 export let tms: TM[] = []
 
 export async function getValidTMs() {
   const tms: TM[] = [];
-  for (let i=1; i<=tmCount; i++) {
-    if (TMBlacklist.includes(i)) continue;
-    const tmData = await machineApi.getMachineById(i);
-    const moveData = await moveApi.getMoveByName(tmData.move.name);
-    tms.push({
-      id: `tm${i}`,
-      name: `${tmData.item.name.toUpperCase} ${ProperName(tmData.move.name)}`,
-      description: `Teaches ${ProperName(tmData.move.name)} (Power: ${moveData.power})`,
-      type: "tm",
-      sprite: "/items/tm.png",
-      moveId: moveData.id,
-      moveName: tmData.move.name,
-      use: await createTMUseFunction(tmData.move.name)
-    })
+  
+  // Get list of all machines (this just gives us URLs)
+  const machineList = await machineApi.listMachines(0, 1000);
+  
+  // Process each machine URL to get full details
+  const machinePromises = machineList.results.map(async (result) => {
+    // Extract machine ID from URL
+    const machineId = parseInt(result.url.split('/').filter(Boolean).pop() || '0');
+    return machineApi.getMachineById(machineId);
+  });
+
+  // Fetch all machines in parallel
+  const machines = await Promise.all(machinePromises);
+  
+  // Filter for Gen 1 TMs and exclude blacklisted TMs
+  const gen1Machines = machines.filter(machine => 
+    machine.version_group.name === "red-blue" && 
+    machine.item.name.startsWith('tm') &&
+    !TMBlacklist.includes(machine.item.name)
+  );
+
+  // Process each Gen 1 TM
+  for (const machine of gen1Machines) {
+    try {
+      const moveData = await moveApi.getMoveByName(machine.move.name);
+      
+      // Skip TMs with no power (status moves)
+      if (!moveData.power) continue;
+      
+      tms.push({
+        id: machine.item.name,
+        name: `${machine.item.name.toUpperCase()}: ${ProperName(machine.move.name)}`,
+        description: `Teaches ${ProperName(machine.move.name)} (Power: ${moveData.power})`,
+        type: "tm",
+        sprite: "/items/tm.png",
+        moveId: moveData.id,
+        moveName: machine.move.name,
+        use: await createTMUseFunction(machine.move.name)
+      });
+    } catch (error) {
+      console.error(`Error processing TM for move ${machine.move.name}:`, error);
+    }
   }
+  
   return tms;
 }
 

@@ -190,23 +190,26 @@ export async function getStartingMons() {
 }
 
 export async function getRandomMove(pokemon: Pokemon) {
-  // const moves = pokemon.moves;
-  // const gen1Moves = moves.filter((move) => 
-  //   move.version_group_details.some((v) => 
-  //     v.version_group.name === "red-blue"
-  //   )
-  // );
-  // const validMoves = [];
-  // for (const move of gen1Moves) {
-  //   const moveData = await moveApi.getMoveByName(move.move.name);
-  //   if (!moveData.power || moveData.power <= 0) {
-  //     continue;
-  //   }
-  //   validMoves.push(moveData);
-  // }
-  // const selectedMove = validMoves[Math.floor(Math.random() * validMoves.length)];
-  const selectedMove = await moveApi.getMoveByName(pokemon.moves[0].move.name); // changed for faster testing, set back to random
-  return selectedMove;
+
+  const gen1Moves = pokemon.moves.filter((move) => 
+    move.version_group_details.some((v) => 
+      v.version_group.name === "red-blue"
+    )
+  );
+
+  const moveDataPromises = gen1Moves.map(move => 
+    moveApi.getMoveByName(move.move.name)
+  );
+  
+  const movesData = await Promise.all(moveDataPromises);
+
+  const validMoves = movesData.filter(move => move.power && move.power > 0);
+  
+  if (validMoves.length === 0) {
+    return await moveApi.getMoveByName("struggle");
+  }
+
+  return validMoves[Math.floor(Math.random() * validMoves.length)];
 }
 
 const enemyMonsRound1 = [
@@ -338,8 +341,10 @@ export async function calculateDamage(attacker: LocalMon, target: LocalMon, move
   const critThreshold = attacker.data.stats[5].base_stat/2;
   const critRoll = Math.floor(Math.random() * 255);
   const critical = critRoll < critThreshold ? 2 : 1;
-  const A = move.damage_class?.name === "special" ? attacker.data.stats[3].base_stat : attacker.data.stats[1].base_stat;
-  const D = move.damage_class?.name === "special" ? target.data.stats[4].base_stat : target.data.stats[2].base_stat;
+  
+  const isSpecial = move.damage_class?.name === "special";
+  const A = isSpecial ? attacker.data.stats[3].base_stat : attacker.data.stats[1].base_stat;
+  const D = isSpecial ? target.data.stats[4].base_stat : target.data.stats[2].base_stat;
   const power = move.power ?? 0;
   const STAB = attacker.data.types.some(type => type.type.name === move.type.name) ? 1.5 : 1;
   const moveTypeData = await monApi.getTypeByName(move.type.name);
