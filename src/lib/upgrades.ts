@@ -423,3 +423,11 @@ export async function getValidTMs() {
 export async function initializeGame() {
   tms = await getValidTMs();
 }
+
+export function removeEquippedTool(pokemon: LocalMon, game: GameState) {
+  if (pokemon.equippedTool) {
+    pokemon.equippedTool.unequip(pokemon);
+    game.inventory.push(pokemon.equippedTool);
+    pokemon.equippedTool = undefined;
+  } 
+}

@@ -3,7 +3,7 @@ import Party from "./Party";
 import Inventory from "./Inventory";
 import PokemonStorage from "./PokemonStorage";
 import { DragEvent, useEffect } from "react";
-
+import { removeEquippedTool } from "@/lib/upgrades";
 type SetupProps = {
   game: GameState;
   setGame: (game: GameState) => void;
@@ -62,10 +62,7 @@ export default function Setup({game, setGame}: SetupProps) {
   const handleRemoveTool = (pokemonIndex: number) => {
     const partySlot = game.party[pokemonIndex];
     if (partySlot.pokemon?.equippedTool) {
-      // Remove tool effect and return it to inventory
-      partySlot.pokemon.equippedTool.unequip(partySlot.pokemon);
-      game.inventory.push(partySlot.pokemon.equippedTool);
-      partySlot.pokemon.equippedTool = undefined;
+      removeEquippedTool(partySlot.pokemon, game);
       setGame({...game});
     }
   };
@@ -85,6 +82,7 @@ export default function Setup({game, setGame}: SetupProps) {
         const [pokemon] = newGame.pokemonStorage.splice(storageIndex, 1);
         // Swap with existing party pokemon if it exists
         if (newGame.party[targetIndex].pokemon) {
+          removeEquippedTool(newGame.party[targetIndex].pokemon!, newGame);
           newGame.pokemonStorage.push(newGame.party[targetIndex].pokemon!);
         }
         newGame.party[targetIndex].pokemon = pokemon;
@@ -97,6 +95,7 @@ export default function Setup({game, setGame}: SetupProps) {
     } else {
       // Moving from party to storage
       if (isStorageTarget) {
+        removeEquippedTool(newGame.party[partyIndex].pokemon!, newGame);
         const pokemon = newGame.party[partyIndex].pokemon!;
         newGame.party[partyIndex].pokemon = null;
         newGame.pokemonStorage.splice(targetIndex, 0, pokemon);
