@@ -276,10 +276,10 @@ export function getMonFromChanceList(list: {mon: string, chance: number}[]) {
 }
 
 export async function getEnemyMon(round: number) {
-  if (round === 1 || round === 2) {
+  if (round === 1) {
     const monName = getMonFromChanceList(enemyMonsRound1);
     return await monApi.getPokemonByName(monName);
-  } else if (round === 3 || round === 4) {
+  } else if (round === 2) {
     const monName = getMonFromChanceList(enemyMonsRound2);
     return await monApi.getPokemonByName(monName);
   } else if (round === 3) {

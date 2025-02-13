@@ -25,7 +25,8 @@
 */
 
 import { Move, MachineClient, MoveClient } from "pokenode-ts";
-import { GameState, LocalMon } from "./gameState";
+import { GameState, LocalMon, ProperName } from "./gameState";
+import { tmCount } from "./settings";
 
 const machineApi = new MachineClient();
 const moveApi = new MoveClient();
@@ -267,22 +268,6 @@ export const tools: Tool[] = [
 
 ];
 
-async function createTMUseFunction(moveName: string): Promise<(pokemon: LocalMon) => Promise<void>> {
-  return async (pokemon: LocalMon) => {
-    const move = await moveApi.getMoveByName(moveName);
-    const canLearn = move.learned_by_pokemon.some(p => 
-      p.name === pokemon.data.name || 
-      p.name === pokemon.data.species.name
-    );
-    
-    if (!canLearn) {
-      throw new Error(`${pokemon.data.name} cannot learn ${move.name}!`);
-    }
-    
-    upgradeMove(move, pokemon);
-  };
-}
-
 const handleTeamRocketFailure = (game: GameState) => {
   const filledSlots = game.party.filter(slot => slot.pokemon !== null);
   if (filledSlots.length > 1) {
@@ -382,11 +367,27 @@ export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
   return upgrades;
 }
 
+async function createTMUseFunction(moveName: string): Promise<(pokemon: LocalMon) => Promise<void>> {
+  return async (pokemon: LocalMon) => {
+    const move = await moveApi.getMoveByName(moveName);
+    const canLearn = move.learned_by_pokemon.some(p => 
+      p.name === pokemon.data.name || 
+      p.name === pokemon.data.species.name
+    );
+    
+    if (!canLearn) {
+      throw new Error(`${pokemon.data.name} cannot learn ${move.name}!`);
+    }
+    
+    upgradeMove(move, pokemon);
+  };
+}
+
 const TMBlacklist = 
   [3,4,6,7,18,19,23,27,30,31,32,33,34,35,41,44,45,46,50]
 
 export async function getRandomItemTM() {
-  const maxId = 50;
+  const maxId = tmCount;
   const validIds = [];
   for (let i = 0; i < maxId; i++) {
     if (TMBlacklist.includes(i)) continue;
@@ -397,46 +398,28 @@ export async function getRandomItemTM() {
   return machine;
 }
 
-export const tms: TM[] = [
-  {
-    id: "tm01",
-    name: "TM01 Mega Punch",
-    description: "Teaches Mega Punch (Power: 80)",
-    type: "tm",
-    sprite: "/items/tm.png",
-    moveId: 5,
-    moveName: "mega-punch",
-    use: await createTMUseFunction("mega-punch")
-  },
-  {
-    id: "tm08",
-    name: "TM08 Body Slam",
-    description: "Teaches Body Slam (Power: 85)",
-    type: "tm",
-    sprite: "/items/tm.png",
-    moveId: 34,
-    moveName: "body-slam",
-    use: await createTMUseFunction("body-slam")
-  },
-  {
-    id: "tm24",
-    name: "TM24 Thunderbolt",
-    description: "Teaches Thunderbolt (Power: 90)",
-    type: "tm",
-    sprite: "/items/tm.png",
-    moveId: 85,
-    moveName: "thunderbolt",
-    use: await createTMUseFunction("thunderbolt")
-  },
-  {
-    id: "tm38",
-    name: "TM38 Fire Blast",
-    description: "Teaches Fire Blast (Power: 110)",
-    type: "tm",
-    sprite: "/items/tm.png",
-    moveId: 126,
-    moveName: "fire-blast",
-    use: await createTMUseFunction("fire-blast")
-  }
-];
+export let tms: TM[] = []
 
+export async function getValidTMs() {
+  const tms: TM[] = [];
+  for (let i=1; i<=tmCount; i++) {
+    if (TMBlacklist.includes(i)) continue;
+    const tmData = await machineApi.getMachineById(i);
+    const moveData = await moveApi.getMoveByName(tmData.move.name);
+    tms.push({
+      id: `tm${i}`,
+      name: `${tmData.item.name.toUpperCase} ${ProperName(tmData.move.name)}`,
+      description: `Teaches ${ProperName(tmData.move.name)} (Power: ${moveData.power})`,
+      type: "tm",
+      sprite: "/items/tm.png",
+      moveId: moveData.id,
+      moveName: tmData.move.name,
+      use: await createTMUseFunction(tmData.move.name)
+    })
+  }
+  return tms;
+}
+
+export async function initializeGame() {
+  tms = await getValidTMs();
+}

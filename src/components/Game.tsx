@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { gameState, GameState, LocalMon } from "@/lib/gameState";
 import SelectMon from "./SelectMon";
 import Setup from "./Setup";
@@ -8,9 +8,14 @@ import FightLoad from "./FightLoad";
 import Upgrade from "./Upgrade";
 import StartGame from "./StartGame";
 import NewEvolutions from "./NewEvolutions";
+import { initializeGame } from "@/lib/upgrades";
 
 
 export default function Game() {
+
+  useEffect(() => {
+    initializeGame();
+  }, []);
 
   const [game, setGame] = useState<GameState>(gameState);
   const [monSelection, setMonSelection] = useState<LocalMon[]>([]);
