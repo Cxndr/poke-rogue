@@ -1,6 +1,7 @@
 import { finishRound, GameState, getMaxHP, LocalMon, ProperName, startAttackLoop } from "@/lib/gameState";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import MonHPBar from "./MonHPBar";
 
 type FightProps = {
   game: GameState;
@@ -99,6 +100,7 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
           {enemyParty.map((mon, index) => (
             <div key={index} className={`flex flex-col items-center justify-center ${mon.hp <= 0 && faintedClassName}`}>
               <p>Lvl: {mon.level} HP: {mon.hp}/{getMaxHP(mon.data.stats[0].base_stat, mon.level)}</p>
+              <MonHPBar pokemon={mon} />
               <Image src={mon.data.sprites.front_default ?? ""} alt={mon.data.name} width={96} height={96} />
               <p>{ProperName(mon.data.name)}</p>
               {mon.move?.name && <p>{ProperName(mon.move.name)}</p>}
@@ -120,6 +122,7 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
             return (
               <div key={index} className={`flex flex-col items-center justify-center ${slot.pokemon.hp <= 0 && faintedClassName}`}>
                 <p>Lvl: {slot.pokemon.level} HP: {slot.pokemon.hp}/{getMaxHP(slot.pokemon.data.stats[0].base_stat, slot.pokemon.level)}</p>
+                <MonHPBar pokemon={slot.pokemon}/>
                 <Image src={slot.pokemon.data.sprites.back_default ?? ""} alt={slot.pokemon.data.name} width={96} height={96} />
                 <p>{ProperName(slot.pokemon.data.name)}</p>
                 {slot.pokemon.move?.name && <p>{ProperName(slot.pokemon.move.name)}</p>}
