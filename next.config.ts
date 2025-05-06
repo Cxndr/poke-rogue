@@ -11,6 +11,7 @@ const nextConfig: NextConfig = {
           pathname: '/PokeAPI/sprites/**',
         },
       ],
+      unoptimized: true, // Disable image optimization until usage reset
     },
 };
 
