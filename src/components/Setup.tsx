@@ -120,7 +120,7 @@ export default function Setup({game, setGame}: SetupProps) {
   return (
     <div className="h-full p-8 flex flex-col items-center justify-between gap-4">
       <h2>Round {game.round}</h2>
-      <Inventory game={game} setGame={setGame} />
+      <Inventory game={game} />
       <Party 
         game={game} 
         onDrop={(e, index) => {

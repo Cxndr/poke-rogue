@@ -174,11 +174,11 @@ export const vitamins: Vitamin[] = [
 
 export const tools: Tool[] = [
   {
-    id: "choicespecs",
-    name: "Choice Specs", 
+    id: "choiceband",
+    name: "Choice Band", 
     description: "+50% Attack", 
     type: "tool",
-    sprite: "/items/choicespecs.png",
+    sprite: "/items/choiceband.png",
     effect: (pokemon) => {
       const atk = pokemon.data.stats.find(s => s.stat.name === "attack");
       if (atk) atk.base_stat = Math.floor(atk.base_stat * 1.5);

@@ -1,3 +1,4 @@
+
 import { Move, MoveClient, Pokemon, PokemonClient, Type, EvolutionClient, PokemonSpecies, EvolutionChain, ChainLink } from "pokenode-ts";
 import { totalPokemon, maxRound, maxPartySize } from "./settings";
 import { Item, Tool } from './upgrades';
@@ -51,7 +52,8 @@ export type GameState = {
   "fight" |
   "upgrade" |
   "gameComplete" |
-  "gameOver";
+  "gameOver" |
+  "runWin";
   options: Pokemon[];
   round: Range<1, typeof maxRound>;
   fightLog: string[];

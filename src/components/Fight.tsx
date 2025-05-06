@@ -66,12 +66,13 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
   }, [fightLogUpdate]);
 
   const fightWon = () => {
+    game.currentState = "runWin";
     finishRound("won", game, setGame);
   }
 
   const fightLost = () => {
     game.currentState = "startGame";
-    finishRound("lost", game, setGame);
+  finishRound("lost", game, setGame);
   }
 
   const updateTimer = (monName: string, timeLeft: number) => {

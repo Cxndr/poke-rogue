@@ -9,6 +9,7 @@ import Upgrade from "./Upgrade";
 import StartGame from "./StartGame";
 import NewEvolutions from "./NewEvolutions";
 import { initializeGame } from "@/lib/upgrades";
+import RunWin from "./RunWin";
 
 
 export default function Game() {
@@ -27,6 +28,10 @@ export default function Game() {
           <NewEvolutions game={game} setGame={setGame} />
         ) : (
           <>
+
+            {game.currentState === "runWin" && (
+              <RunWin game={game} />
+            )}
 
             {game.currentState === "startGame" && (
               <StartGame game={game} setGame={setGame} monSelection={monSelection} setMonSelection={setMonSelection} />
