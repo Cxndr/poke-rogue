@@ -1,36 +1,16 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PokeRogue
+### Rogue-like browser game made using react without any use of canvas, webgl or similar technologies.
+### Live Site: [poke-rogue-gules.vercel.app](https://poke-rogue-gules.vercel.app/)
 
-## Getting Started
+I wanted to see if I could make a web game soley using react routes and front-end code - how easy would this be to implement and what limitation and challenges would I run into in the process. 
 
-First, run the development server:
+This game is the result of that. It has a very simple design: you start with 1 pokemon and play 10 rounds, trying to win all of them. Each round you win you gain 1 of the pokemon you defeated as well as an upgrade from a random selection of 3 and all your pokemon gain 5 levels. If you lose a battle you have to start over. You can find minerals and held items to upgrade your pokemons stats and they evolve as you level them. Data for pokemon and moves is all pulled from [PokeAPI](https://pokeapi.co/).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Basic Usage
+1. Go to the [live site](https://poke-rogue-gules.vercel.app/).
+2. Click play!
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Run Locally
+1. Clone this repo.
+2. Inside the cloned repo run `npm i` to install the dependencies, then run `npm run build` to build the app, and `npm run start` to run it.
+3. Visit `localhost:3000` in you web browser to play the game.
