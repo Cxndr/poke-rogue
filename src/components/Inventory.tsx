@@ -1,7 +1,7 @@
 import { GameState } from "@/lib/gameState";
 import { Item } from "@/lib/upgrades";
 import { DragEvent } from "react";
-import Image from "next/image";
+import ItemCard from "./ItemCard";
 
 type InventoryProps = {
   game: GameState;
@@ -20,15 +20,13 @@ export default function Inventory({ game }: InventoryProps) {
       <h3>Inventory</h3>
       <div className="grid grid-cols-6 gap-2 p-4 bg-zinc-300 rounded-lg">
         {game.inventory.map((item, index) => (
-          <div
+          <ItemCard
             key={`${item.id}-${index}`}
+            item={item}
             draggable
             onDragStart={(e) => handleDragStart(e, item)}
-            className="flex flex-col items-center p-2 bg-zinc-100 text-zinc-900 rounded cursor-move hover:bg-zinc-50"
-          >
-            <Image src={item.sprite} alt={item.name} width={32} height={32} />
-            <span className="text-sm">{item.name}</span>
-          </div>
+            className="cursor-move shadow-sm shadow-zinc-900/50"
+          />
         ))}
       </div>
     </div>

@@ -87,6 +87,9 @@ export interface TM extends BaseItem {
   type: "tm";
   moveId: number;
   moveName: string;
+  moveType: string;
+  movePower: number;
+  moveAccuracy: number;
   use: (pokemon: LocalMon) => Promise<void>;
 }
 
@@ -111,7 +114,7 @@ export const vitamins: Vitamin[] = [
   {
     id: "hpup",
     name: "HP Up",
-    description: "Increases HP by 50",
+    description: "+50 HP",
     type: "vitamin",
     sprite: "/items/hpup.png",
     stat: "hp",
@@ -121,7 +124,7 @@ export const vitamins: Vitamin[] = [
   {
     id: "protein",
     name: "Protein",
-    description: "Increases Attack by 10",
+    description: "+10 Attack",
     type: "vitamin",
     sprite: "/items/protein.png",
     stat: "attack",
@@ -131,7 +134,7 @@ export const vitamins: Vitamin[] = [
   {
     id: "iron",
     name: "Iron",
-    description: "Increases Defense by 10",
+    description: "+10 Defense",
     type: "vitamin",
     sprite: "/items/iron.png",
     stat: "defense",
@@ -141,7 +144,7 @@ export const vitamins: Vitamin[] = [
   {
     id: "calcium",
     name: "Calcium",
-    description: "Increases Special Defense by 10",
+    description: "+10 Special Defense",
     type: "vitamin",
     sprite: "/items/calcium.png",
     stat: "special-defense",
@@ -151,7 +154,7 @@ export const vitamins: Vitamin[] = [
   {
     id: "zinc",
     name: "Zinc",
-    description: "Increases Special Attack by 10",
+    description: "+10 Special Attack",
     type: "vitamin",
     sprite: "/items/zinc.png",
     stat: "special-attack",
@@ -161,7 +164,7 @@ export const vitamins: Vitamin[] = [
   {
     id: "carbos",
     name: "Carbos",
-    description: "Increases Speed by 10",
+    description: "+10 Speed",
     type: "vitamin",
     sprite: "/items/carbos.png",
     stat: "speed",
@@ -432,11 +435,14 @@ export async function getValidTMs() {
       tms.push({
         id: machine.item.name,
         name: `${machine.item.name.toUpperCase()}: ${ProperName(machine.move.name)}`,
-        description: `Teaches ${ProperName(machine.move.name)} (Power: ${moveData.power})`,
+        description: `Teaches ${ProperName(machine.move.name)}`,
         type: "tm",
         sprite: "/items/tm.png",
         moveId: moveData.id,
         moveName: machine.move.name,
+        moveType: moveData.type.name,
+        movePower: moveData.power ?? 0,
+        moveAccuracy: moveData.accuracy ?? 100,
         use: await createTMUseFunction(machine.move.name)
       });
     } catch (error) {
