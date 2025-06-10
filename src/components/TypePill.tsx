@@ -1,4 +1,4 @@
-import { pokemonTypeColors } from "@/lib/colors";
+
 
 type TypePillProps = {
   type: string;

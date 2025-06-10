@@ -19,7 +19,7 @@ export default function StartGame({game, setGame, monSelection, setMonSelection}
       setMonSelection(mons);
     };
     loadStartingMons();
-  }, []);
+  }, [setMonSelection]);
 
   return (
     <>

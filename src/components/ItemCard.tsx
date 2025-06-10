@@ -25,9 +25,7 @@ const getItemTypeColor = (type: string) => {
   }
 };
 
-const capitalizeFirst = (str: string) => {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-};
+
 
 const renderTMDetails = (tm: TM) => {
   return (

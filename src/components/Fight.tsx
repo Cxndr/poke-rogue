@@ -57,7 +57,7 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
       Object.values(timeoutRefs.current).forEach(clearTimeout);
       timeoutRefs.current = {};
     };
-  }, []);
+  }, [enemyParty, game, setGame]);
 
   useEffect(() => {
     if (fightLogRef.current) {
