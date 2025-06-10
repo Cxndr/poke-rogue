@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@vercel/analytics": "^1.5.0",
     "axios": "^1.7.9",
     "axios-cache-interceptor": "^1.6.2",
     "next": "^15.3.3",
