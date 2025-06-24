@@ -13,6 +13,7 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
 
   const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
   const fightLogRef = useRef<HTMLDivElement>(null);
+  const gameRef = useRef(game);
 
   const [fightLogUpdate, setFightLogUpdate] = useState(0);
   const [fightStatus, setFightStatus] = useState<"fighting" | "Won" | "Lost">("fighting");
@@ -20,15 +21,21 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
 
   const faintedClassName = "opacity-30";
 
+  // Update the game ref whenever game changes, but don't restart attack loops
   useEffect(() => {
+    gameRef.current = game;
+  }, [game]);
 
-    game.party.forEach(slot => {
+  useEffect(() => {
+    const currentGame = gameRef.current;
+
+    currentGame.party.forEach(slot => {
       if (!slot.pokemon) return;
       startAttackLoop(
         slot.pokemon,
         enemyParty,
         enemyParty,
-        game,
+        gameRef.current,
         timeoutRefs.current,
         setFightStatus,
         setFightLogUpdate,
@@ -41,9 +48,9 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
     enemyParty.forEach(mon => {
       startAttackLoop(
         mon,
-        game.party.map(slot => slot.pokemon),
+        currentGame.party.map(slot => slot.pokemon),
         enemyParty,
-        game,
+        gameRef.current,
         timeoutRefs.current,
         setFightStatus,
         setFightLogUpdate,
@@ -57,7 +64,7 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
       Object.values(timeoutRefs.current).forEach(clearTimeout);
       timeoutRefs.current = {};
     };
-  }, [enemyParty, game, setGame]);
+  }, [enemyParty, setGame]);
 
   useEffect(() => {
     if (fightLogRef.current) {
