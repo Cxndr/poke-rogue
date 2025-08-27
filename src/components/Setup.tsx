@@ -4,6 +4,9 @@ import Inventory from "./Inventory";
 import PokemonStorage from "./PokemonStorage";
 import { DragEvent, useEffect } from "react";
 import { removeEquippedTool } from "@/lib/upgrades";
+import HeaderPanel from "./HeaderPanel";
+import Button from "./Button";
+
 type SetupProps = {
   game: GameState;
   setGame: (game: GameState) => void;
@@ -118,8 +121,20 @@ export default function Setup({game, setGame}: SetupProps) {
   }
 
   return (
-    <div className="h-full p-8 flex flex-col items-center justify-between gap-4">
-      <h2>Round {game.round}</h2>
+    <div className="h-full p-8 pt-19 flex flex-col items-center justify-between gap-0">
+      <HeaderPanel 
+        side="below" 
+        className="absolute top-0 flex flex-row gap-4 justify-center items-center"
+      >
+        <h2 className="inline">Round {game.round}</h2>
+        <Button 
+          onClick={handleFightClick}
+          disabled={game.party.length === 0}
+          className="inline !px-4 !py-1.5 my-1.5"
+        >
+          Battle
+        </Button>
+      </HeaderPanel>
       <Inventory game={game} />
       <Party 
         game={game} 
@@ -137,13 +152,6 @@ export default function Setup({game, setGame}: SetupProps) {
         game={game} 
         onDrop={(e, index) => handlePokemonDrop(e, index, true)} 
       />
-      <button 
-        onClick={handleFightClick}
-        disabled={game.party.length === 0}
-        className={`px-4 py-2 rounded ${game.party.length === 0 ? 'bg-gray-300' : 'bg-blue-500 hover:bg-blue-600 text-white'}`}
-      >
-        Fight
-      </button>
     </div>
   );
 }

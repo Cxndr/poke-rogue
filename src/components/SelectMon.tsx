@@ -1,14 +1,21 @@
-import Image from "next/image";
-import { GameState, ProperName, LocalMon, resetHP } from "@/lib/gameState";
+
+import { GameState, LocalMon, resetHP } from "@/lib/gameState";
 import { useEffect } from "react";
+import { DotLoader } from "react-spinners";
+import Panel from "./Panel";
+import HeaderPanel from "./HeaderPanel";
+import MonCard from "./MonCard";
+import Button from "./Button";
 
 type SelectMonProps = {
   game: GameState;
   setGame: (game: GameState) => void;
   selection: LocalMon[];
+  loading?: boolean;
+  setLoading?: (loading: boolean) => void;
 }
 
-export default function SelectMon({game, setGame, selection}: SelectMonProps) {
+export default function SelectMon({game, setGame, selection, loading, setLoading}: SelectMonProps) {
 
   useEffect(() => {
     for (const mon of selection) {
@@ -31,21 +38,39 @@ export default function SelectMon({game, setGame, selection}: SelectMonProps) {
     });
   }
 
-  return (
-    <div className="flex flex-col items-center justify-center">
-      <h2>Select a Pokemon to add to your party:</h2>
-      <div className="flex flex-row gap-4">
-      {selection.map((option, index) => (
-        <div key={index} className="flex flex-col items-center justify-center">
-          <Image src={option.data.sprites.front_default ?? ""} alt={option.data.name} width={96} height={96} />
-          <p>{ProperName(option.data.name)}</p>
-          <p>{ProperName(option.move.name)}</p>
-          <button onClick={() => selectMonClick(option)} className="mt-4">
-            Select
-          </button>
-        </div>
-      ))}
+  const isLoading = loading || selection.length === 0 || selection.some(mon => !mon.data?.sprites?.front_default || !mon.move?.name);
+
+  if (isLoading) {
+    return (
+      <div 
+        className="
+          flex flex-col items-center justify-center gap-4
+          bg-zinc-50/30 backdrop-blur-xl p-8 rounded-3xl
+          shadow-md shadow-zinc-500/40
+        "
+      >
+        <DotLoader color="oklch(63.7% 0.237 25.331)" loading={true} size={50} />
+        <p className="text-red-500/80">Loading...</p>
       </div>
+    );
+  }
+
+  return (
+    <div>
+      <HeaderPanel>
+        <h2>Select a Pokemon to add to your team:</h2>
+      </HeaderPanel>
+      <Panel className="flex flex-col items-center justify-center min-w-xl">
+        <div className="flex flex-row gap-6">
+        {selection.map((mon, index) => (
+          <MonCard key={index} mon={mon}>
+            <Button onClick={() => selectMonClick(mon)} className="mt-4">
+              Choose
+            </Button>
+          </MonCard>
+        ))}
+        </div>
+      </Panel>
     </div>
   );
 }

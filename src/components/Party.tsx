@@ -1,5 +1,8 @@
-import { GameState, getMaxHP, ProperName } from "@/lib/gameState";
+import { GameState, getMaxHP } from "@/lib/gameState";
+import { ProperName } from "@/lib/utils";
 import Image from "next/image";
+import Panel from "./Panel";
+import HeaderPanel from "./HeaderPanel";
 
 type PartyProps = {
   game: GameState;
@@ -22,12 +25,23 @@ export default function Party({game, onDrop, onRemoveTool}: PartyProps) {
 
   return (
     <div>
-      <h3>Party</h3>
-      <div className="flex flex-row gap-4 justify-center items-center">
+
+      <HeaderPanel>
+        <h3>Active Party</h3>
+      </HeaderPanel>
+      
+      <Panel className="flex flex-row gap-4 justify-center items-center">
         {game.party.map((slot) => (
           <div 
             key={slot.index} 
-            className="flex flex-col items-center justify-center p-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500"
+            className="
+              flex flex-col items-center justify-center p-2 
+              border-2 border-dashed border-gray-300 
+              bg-zinc-50
+              rounded-lg
+              cursor-pointer 
+              hover:border-blue-500
+            "
             draggable={!!slot.pokemon}
             onDragStart={(e) => handleDragStart(e, slot.index)}
             onDragOver={handleDragOver}
@@ -73,7 +87,7 @@ export default function Party({game, onDrop, onRemoveTool}: PartyProps) {
             )}
           </div>
         ))}
-      </div>
+      </Panel>
     </div>
   );
 }

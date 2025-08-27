@@ -1,6 +1,7 @@
 import { GameState, LocalMon } from "@/lib/gameState";
 import { DragEvent } from "react";
 import PokemonCard from "./PokemonCard";
+import HeaderPanel from "./HeaderPanel";
 
 type PokemonStorageProps = {
   game: GameState;
@@ -24,9 +25,18 @@ export default function PokemonStorage({ game, onDrop }: PokemonStorageProps) {
   };
 
   return (
-    <div>
-      <h3>Pokemon Storage</h3>
-      <div className="grid grid-cols-6 gap-2 p-4 bg-zinc-300 rounded-lg">
+    <div className="flex flex-col items-center gap-0">
+      <HeaderPanel className="-z-10">
+        <h3>Pokemon Storage</h3>
+      </HeaderPanel>
+      <div 
+        className="
+          grid grid-cols-6 gap-2 p-4 rounded-2xl
+          bg-linear-150 from-green-500 from-10% to-green-600 to-90%
+          shadow-md shadow-zinc-900/30
+          min-w-lg
+        "
+      >
         {game.pokemonStorage.map((pokemon, index) => (
           <PokemonCard
             key={`${pokemon.data.id}-${index}`}

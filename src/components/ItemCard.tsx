@@ -2,6 +2,7 @@ import { Item, TM } from "@/lib/upgrades";
 import Image from "next/image";
 import { ReactNode } from "react";
 import TypePill from "./TypePill";
+import CornerTagCard from "./CornerTagCard";
 
 type ItemCardProps = {
   item: Item;
@@ -15,17 +16,15 @@ type ItemCardProps = {
 const getItemTypeColor = (type: string) => {
   switch (type) {
     case "vitamin":
-      return "#3b82f6"; // blue-500
+      return "blue-500"
     case "tool":
-      return "#f97316"; // orange-500
+      return "orange-500"
     case "tm":
-      return "#a855f7"; // purple-500
+      return "purple-500"
     default:
-      return "#6b7280"; // gray-500
+      return "gray-500"
   }
 };
-
-
 
 const renderTMDetails = (tm: TM) => {
   return (
@@ -42,43 +41,49 @@ const renderTMDetails = (tm: TM) => {
   );
 };
 
+
+
 export default function ItemCard({ 
   item, 
   children, 
-  className = "", 
-  onClick, 
-  draggable = false, 
-  onDragStart 
+  className = "",
+  onClick,
+  draggable = false,
+  onDragStart
 }: ItemCardProps) {
-  const triangleColor = getItemTypeColor(item.type);
+  
+  const typeColor = getItemTypeColor(item.type);
   const isTM = item.type === "tm";
   
   return (
-    <div 
-      className={`relative flex flex-col items-center p-2 bg-zinc-100 text-zinc-900 rounded-lg cursor-pointer hover:bg-zinc-50 ${className}`}
-      onClick={onClick}
-      draggable={draggable}
-      onDragStart={onDragStart}
-    >
-      <Image src={item.sprite} alt={item.name} width={32} height={32} />
-      <span className="text-sm">{item.name}</span>
-      
-      {isTM ? (
-        renderTMDetails(item as TM)
-      ) : (
-        <span className="text-xs text-zinc-600 text-center">{item.description}</span>
-      )}
-      
-      {children}
-      
-      {/* Colored triangle in top-right corner */}
-      <div className="absolute top-0 right-0 w-0 h-0" 
-           style={{
-             borderLeft: "16px solid transparent",
-             borderTop: `16px solid ${triangleColor}`,
-             borderTopRightRadius: "6px"
-           }} 
-      />
-    </div>
+    <CornerTagCard tagColor={typeColor} cardSize="small">
+      <div 
+        className={`
+          relative flex flex-col items-center p-2 rounded-lg
+          min-w-22
+          bg-zinc-100 text-zinc-900 hover:bg-zinc-50
+          cursor-pointer 
+          ${className}
+        `}
+        onClick={onClick}
+        draggable={draggable}
+        onDragStart={onDragStart}
+      >
+        <Image src={item.sprite} alt={item.name} width={32} height={32} />
+        <span className="text-sm">{item.name}</span>
+        
+        {isTM ? (
+          renderTMDetails(item as TM)
+        ) : (
+          <span className="text-xs text-zinc-600 text-center">
+            {item.description}
+          </span>
+        )}
+        
+        {children}
+
+      </div>
+    </CornerTagCard>
+    
   );
 } 

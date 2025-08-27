@@ -25,7 +25,8 @@
 */
 
 import { Move, MachineClient, MoveClient } from "pokenode-ts";
-import { GameState, LocalMon, ProperName } from "./gameState";
+import { GameState, LocalMon } from "./gameState";
+import { ProperName } from "./utils";
 
 const machineApi = new MachineClient();
 const moveApi = new MoveClient();
@@ -124,7 +125,7 @@ export const vitamins: Vitamin[] = [
   {
     id: "protein",
     name: "Protein",
-    description: "+10 Attack",
+    description: "+10 Atk",
     type: "vitamin",
     sprite: "/items/protein.png",
     stat: "attack",
@@ -134,7 +135,7 @@ export const vitamins: Vitamin[] = [
   {
     id: "iron",
     name: "Iron",
-    description: "+10 Defense",
+    description: "+10 Def",
     type: "vitamin",
     sprite: "/items/iron.png",
     stat: "defense",
@@ -144,7 +145,7 @@ export const vitamins: Vitamin[] = [
   {
     id: "calcium",
     name: "Calcium",
-    description: "+10 Special Defense",
+    description: "+10 Sp Def",
     type: "vitamin",
     sprite: "/items/calcium.png",
     stat: "special-defense",
@@ -154,7 +155,7 @@ export const vitamins: Vitamin[] = [
   {
     id: "zinc",
     name: "Zinc",
-    description: "+10 Special Attack",
+    description: "+10 Sp Atk",
     type: "vitamin",
     sprite: "/items/zinc.png",
     stat: "special-attack",
@@ -164,7 +165,7 @@ export const vitamins: Vitamin[] = [
   {
     id: "carbos",
     name: "Carbos",
-    description: "+10 Speed",
+    description: "+10 Spd",
     type: "vitamin",
     sprite: "/items/carbos.png",
     stat: "speed",
@@ -179,7 +180,7 @@ export const tools: Tool[] = [
   {
     id: "choiceband",
     name: "Choice Band", 
-    description: "+50% Attack", 
+    description: "+50% Atk", 
     type: "tool",
     sprite: "/items/choiceband.png",
     effect: (pokemon) => {
@@ -194,7 +195,7 @@ export const tools: Tool[] = [
   {
     id: "choicespecs",
     name: "Choice Specs",
-    description: "+50% Special Attack",
+    description: "+50% Sp Atk",
     type: "tool",
     sprite: "/items/choicespecs.png",
     effect: (pokemon) => {
@@ -209,7 +210,7 @@ export const tools: Tool[] = [
   {
     id: "pothelmet",
     name: "Pot Helmet",
-    description: "+50% Defense",
+    description: "+50% Def",
     type: "tool",
     sprite: "/items/pothelmet.png",
     effect: (pokemon) => {
@@ -224,7 +225,7 @@ export const tools: Tool[] = [
   {
     id: "assaultvest",
     name: "Assault Vest",
-    description: "+50% Special Defense",
+    description: "+50% Sp Def",
     type: "tool",
     sprite: "/items/assaultvest.png",
     effect: (pokemon) => {
@@ -239,7 +240,7 @@ export const tools: Tool[] = [
   {
     id: "choicescarf",
     name: "Choice Scarf",
-    description: "+50% Speed",
+    description: "+50% Spd",
     type: "tool",
     sprite: "/items/choicescarf.png",
     effect: (pokemon) => {

@@ -1,7 +1,10 @@
-import { finishRound, GameState, getMaxHP, LocalMon, ProperName, startAttackLoop } from "@/lib/gameState";
+import { finishRound, GameState, getMaxHP, LocalMon, startAttackLoop } from "@/lib/gameState";
+import { ProperName } from "@/lib/utils";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import MonHPBar from "./MonHPBar";
+import HeaderPanel from "./HeaderPanel";
+import Button from "./Button";
 
 type FightProps = {
   game: GameState;
@@ -87,19 +90,31 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
   };
 
   return (
-    <div className="h-full w-full flex flex-row items-center justify-center gap-8">
+    <div 
+      className="
+        h-full w-full flex flex-row items-center justify-center gap-8 py-12
+      "
+    >
+      <HeaderPanel side="below" className="absolute top-0">
+        <h2>Round {game.round}</h2>
+      </HeaderPanel>
 
-      <div className="h-full w-2/3 flex flex-col items-center justify-between">
+      <div 
+        className="
+          h-full w-2/3 flex flex-col items-center justify-between
+          rounded-3xl p-8 
+          bg-lime-200
+        "
+      >
         
-        <h1>Round {game.round}</h1>
         {fightStatus !== "fighting" && (
           <div className="flex flex-col items-center justify-center">
             <h1>Fight {fightStatus}</h1>
             {fightStatus === "Won" && (
-              <button onClick={fightWon}>Continue</button>
+              <Button onClick={fightWon}>Continue</Button>
             )}
             {fightStatus === "Lost" && (
-              <button onClick={fightLost}>Try Again</button>
+              <Button onClick={fightLost}>Try Again</Button>
             )}
           </div>
         )}
@@ -149,7 +164,13 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
 
       </div>
 
-      <div className="h-full w-1/3 px-8 py-4 flex flex-col items-center border-1 border-zinc-300 rounded-md">
+      <div 
+        className="
+          h-full w-1/3 px-8 py-4 flex flex-col items-center rounded-3xl
+          bg-zinc-300/30 backdrop-blur-xl
+          shadow-md shadow-zinc-900/30
+        "
+      >
         <h1 className="pb-4">Fight Log</h1>
         <div ref={fightLogRef} className="flex-1 w-full overflow-y-auto">
           {game.fightLog.map((log, index) => (

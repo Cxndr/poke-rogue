@@ -2,6 +2,7 @@
 import { Move, MoveClient, Pokemon, PokemonClient, Type, EvolutionClient, PokemonSpecies, EvolutionChain, ChainLink } from "pokenode-ts";
 import { totalPokemon, maxRound, maxPartySize } from "./settings";
 import { Item, Tool } from './upgrades';
+import { ProperName } from "./utils";
 const monApi = new PokemonClient();
 const moveApi = new MoveClient();
 const evoApi = new EvolutionClient();
@@ -312,13 +313,6 @@ export async function getEnemyParty(level: number, count: number, round: number)
   return eParty;
 }
 
-export function ProperName(name: string) {
-  let result = name.toLowerCase();
-  result = result.replace(/[^a-z0-9]/g, " ");
-  result = result.replace(/\b\w/g, (char) => char.toUpperCase());
-  return result;
-}
-
 function getTypeEffectiveness(moveTypeData: Type, defenderType: string) {
   if (moveTypeData.damage_relations.no_damage_to.some(type => type.name === defenderType)) return 0.1;
   if (moveTypeData.damage_relations.double_damage_to.some(type => type.name === defenderType)) return 2;
@@ -458,11 +452,10 @@ export function startAttackLoop(
 
 export async function newLocalMon(pokemon: Pokemon) {
   const speciesData = await monApi.getPokemonSpeciesById(pokemon.id);
-  console.log("SPECIES DATA FOR:", pokemon.name, speciesData);
   const evolutionChainId = Number(speciesData.evolution_chain.url.split("/").filter(Boolean).pop())
   const evolutionData = await evoApi.getEvolutionChainById(evolutionChainId);
 
-  return {
+  const localMon = {
     data: pokemon,
     hp: getMaxHP(pokemon.stats[0].base_stat, 5),
     level: 5,
@@ -471,6 +464,9 @@ export async function newLocalMon(pokemon: Pokemon) {
     speciesData: speciesData,
     evolutionData: evolutionData
   }
+  console.log("newLocalMon:", pokemon.name, localMon);
+
+  return localMon
 }
 
 export function checkIfFightOver(party: PartySlot[], enemyParty: LocalMon[]) {

@@ -1,4 +1,5 @@
-import { LocalMon, ProperName } from "@/lib/gameState";
+import { LocalMon } from "@/lib/gameState";
+import { ProperName } from "@/lib/utils";
 import Image from "next/image";
 import { ReactNode, DragEvent } from "react";
 

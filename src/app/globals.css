@@ -24,32 +24,25 @@
 }
 
 :root {
-  --background: #ffffff;
+  --background: #f3f3f3;
   --foreground: #171717;
 }
 
-@media (prefers-color-scheme: dark) {
+@media (dark) {
   :root {
-    --background: #0a0a0a;
+    --background: #1a1a1a;
     --foreground: #ededed;
   }
 }
 
 body {
   color: var(--foreground);
-  background: var(--background);
+  background: 
+    url("/bg_pattern_transp.png"),
+    var(--background);
+  background-repeat: repeat;
+  background-size: 300px 300px;
   font-family: Arial, Helvetica, sans-serif;
-}
-
-button {
-  background-color: #bb1e1e;
-  color: #fff;
-  padding: 10px 20px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-button:hover {
-  background-color: #991616;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -79,4 +72,8 @@ h5 {
 
 h6 {
   font-size: 0.6rem;
+}
+
+.logo-font {
+  font-family: var(--font-more-sugar), 'Comic Sans MS', cursive, sans-serif !important;
 }
