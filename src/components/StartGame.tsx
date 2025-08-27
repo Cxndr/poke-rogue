@@ -55,7 +55,7 @@ export default function StartGame({game, setGame, monSelection, setMonSelection}
     <>
       
       {beginGame ? (
-        <SelectMon game={game} setGame={setGame} selection={monSelection} loading={loading} setLoading={setLoading} />
+        <SelectMon game={game} setGame={setGame} selection={monSelection} loading={loading} />
       ) : (
         <Panel>
           <div className="flex flex-row items-stretch gap-4 w-xl h-fit">

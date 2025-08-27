@@ -12,10 +12,9 @@ type SelectMonProps = {
   setGame: (game: GameState) => void;
   selection: LocalMon[];
   loading?: boolean;
-  setLoading?: (loading: boolean) => void;
 }
 
-export default function SelectMon({game, setGame, selection, loading, setLoading}: SelectMonProps) {
+export default function SelectMon({game, setGame, selection, loading}: SelectMonProps) {
 
   useEffect(() => {
     for (const mon of selection) {
