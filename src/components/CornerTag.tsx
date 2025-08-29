@@ -1,5 +1,7 @@
+import { tokenColorVars } from "@/lib/colors";
+
 type CornerTagProps = {
-  tagColor: string;
+  tagColor: string; // Tailwind token like "red-500"
   size?: "small" | "med" | "large"
   className?: string;
 }
@@ -13,13 +15,15 @@ export default function CornerTag({tagColor, size = "small", className}:CornerTa
 
   // Default behavior - simple corner tag
   return (
-    <div 
-      className={`absolute top-0 right-0 w-0 h-0 ${className}`}
+    <div
+      className={`absolute top-0 right-0 w-0 h-0 border-t-[var(--ui-color)] ${className ?? ""}`}
       style={{
+        ...tokenColorVars(tagColor),
         borderLeft: `${tagSize}px solid transparent`,
-        borderTop: `${tagSize}px solid var(--color-${tagColor})`,
+        borderTopWidth: tagSize,
+        borderTopStyle: "solid",
         borderTopRightRadius: "6px"
-      }} 
+      }}
     />
   )
 }

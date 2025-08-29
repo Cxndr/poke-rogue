@@ -73,7 +73,7 @@ export default function StartGame({game, setGame, monSelection, setMonSelection}
                 src="/oak-welcome.png"
                 alt="professor oak"
                 fill
-                objectFit="cover"
+                className="object-cover"
               />
             </div>
 

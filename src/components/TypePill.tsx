@@ -1,5 +1,5 @@
 import { capitalizeFirst } from "@/lib/utils";
-import { getTypeColorClass } from "@/lib/colors";
+import { typeColorVars } from "@/lib/colors";
 
 type TypePillProps = {
   type: string;
@@ -9,18 +9,18 @@ type TypePillProps = {
 
 export default function TypePill({ type, className = "", children }: TypePillProps) {
   const capitalizedType = capitalizeFirst(type);
-  const colorClass = getTypeColorClass(type);
-  
+
   return (
-    <div 
+    <div
       className={`
-        px-[7px] py-[3px] rounded-full 
-        text-xs font-medium text-white 
+        px-[7px] py-[3px] rounded-full
+        text-xs font-medium text-white
+        bg-[var(--ui-color)]
         ${className}
       `}
-      style={{backgroundColor: `var(--color-${colorClass})`}}
+      style={typeColorVars(type)}
     >
       { children ?? capitalizedType}
     </div>
   );
-} 
+}

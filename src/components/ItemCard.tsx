@@ -3,6 +3,7 @@ import Image from "next/image";
 import { ReactNode } from "react";
 import TypePill from "./TypePill";
 import CornerTagCard from "./CornerTagCard";
+import { getItemColorClass } from "@/lib/colors";
 
 type ItemCardProps = {
   item: Item;
@@ -13,18 +14,7 @@ type ItemCardProps = {
   onDragStart?: (e: React.DragEvent) => void;
 }
 
-const getItemTypeColor = (type: string) => {
-  switch (type) {
-    case "vitamin":
-      return "blue-500"
-    case "tool":
-      return "orange-500"
-    case "tm":
-      return "purple-500"
-    default:
-      return "gray-500"
-  }
-};
+
 
 const renderTMDetails = (tm: TM) => {
   return (
@@ -52,7 +42,7 @@ export default function ItemCard({
   onDragStart
 }: ItemCardProps) {
   
-  const typeColor = getItemTypeColor(item.type);
+  const typeColor = getItemColorClass(item.type);
   const isTM = item.type === "tm";
   
   return (

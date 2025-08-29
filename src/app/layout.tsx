@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next"
+import ColorsTokenRegistry from "@/components/ColorsTokenRegistry";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -38,6 +39,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${moreSugar.variable} antialiased`}
       >
+        <ColorsTokenRegistry />
         <main className="h-svh w-full" >
           {children}
         </main>
