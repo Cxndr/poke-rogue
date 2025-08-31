@@ -3,6 +3,8 @@ import { ProperName } from "@/lib/utils";
 import Image from "next/image";
 import Panel from "./Panel";
 import HeaderPanel from "./HeaderPanel";
+import MonCard from "./MonCard";
+import Button from "./Button";
 
 type PartyProps = {
   game: GameState;
@@ -35,12 +37,11 @@ export default function Party({game, onDrop, onRemoveTool}: PartyProps) {
           <div 
             key={slot.index} 
             className="
-              flex flex-col items-center justify-center p-2 
-              border-2 border-dashed border-gray-300 
-              bg-zinc-50
-              rounded-lg
+              flex flex-col items-center justify-center
               cursor-pointer 
-              hover:border-blue-500
+              hover:drop-shadow-xl/30
+              hover:scale-105
+              transition-all duration-300
             "
             draggable={!!slot.pokemon}
             onDragStart={(e) => handleDragStart(e, slot.index)}
@@ -49,40 +50,35 @@ export default function Party({game, onDrop, onRemoveTool}: PartyProps) {
           >
             {slot.pokemon ? (
               <>
-                <Image 
-                  src={slot.pokemon.data.sprites.front_default ?? ""} 
-                  alt={slot.pokemon.data.name} 
-                  width={96} 
-                  height={96} 
-                />
-                <p>{ProperName(slot.pokemon.data.name)}</p>
-                <p>{ProperName(slot.pokemon.move.name)}</p>
+                <MonCard mon={slot.pokemon}>
                 <div className="flex flex-col items-center">
                   <p className="text-sm text-gray-600">
                     {slot.pokemon.equippedTool ? ProperName(slot.pokemon.equippedTool.name) : "No item"}
                   </p>
                   {slot.pokemon.equippedTool && onRemoveTool && (
-                    <button 
+                    <Button 
                       onClick={() => onRemoveTool(slot.index)}
-                      className="text-xs text-red-500 hover:text-red-700"
+                      className="text-xs !px-3 !py-1.5"
                     >
                       Remove Tool
-                    </button>
+                    </Button>
                   )}
                 </div>
-                <div className="grid grid-cols-4 gap-2 text-right">
-                  <span>Lvl: </span><span>{slot.pokemon.level}</span>
-                  <span>HP:  </span><span>{getMaxHP(slot.pokemon.data.stats[0].base_stat, slot.pokemon.level)}</span>
-                  <span>Atk: </span><span>{slot.pokemon.data.stats[1].base_stat}</span>
-                  <span>Def: </span><span>{slot.pokemon.data.stats[2].base_stat}</span>
-                  <span>SpA: </span><span>{slot.pokemon.data.stats[3].base_stat}</span>
-                  <span>SpD: </span><span>{slot.pokemon.data.stats[4].base_stat}</span>
-                  <span>Spd: </span><span>{slot.pokemon.data.stats[5].base_stat}</span>
-                </div>
+                </MonCard>
               </>
             ) : (
-              <div className="w-24 h-24 flex items-center justify-center text-gray-400">
-                Empty Slot
+              <div 
+                className="
+                  w-48 min-h-0
+                  flex flex-1 items-center justify-center 
+                  
+                  text-zinc-950/50 bg-zinc-50/50
+                  rounded-3xl
+                  select-none
+                  p-4
+                "
+              >
+                Empty
               </div>
             )}
           </div>

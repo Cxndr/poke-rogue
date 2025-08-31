@@ -10,10 +10,9 @@ export default function CornerTag({tagColor, size = "small", className}:CornerTa
 
   let tagSize = 16;
   if      (size == "small") { tagSize = 16 }
-  else if (size == "med")   { tagSize = 28 }
-  else if (size == "large") { tagSize = 40 }
+  else if (size == "med")   { tagSize = 48 }
+  else if (size == "large") { tagSize = 100 }
 
-  // Default behavior - simple corner tag
   return (
     <div
       className={`absolute top-0 right-0 w-0 h-0 border-t-[var(--ui-color)] ${className ?? ""}`}

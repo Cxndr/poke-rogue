@@ -16,6 +16,7 @@ export default function TypePill({ type, className = "", children }: TypePillPro
         px-[7px] py-[3px] rounded-full
         text-xs font-medium text-white
         bg-[var(--ui-color)]
+        shadow-xs shadow-zinc-900/80
         ${className}
       `}
       style={typeColorVars(type)}

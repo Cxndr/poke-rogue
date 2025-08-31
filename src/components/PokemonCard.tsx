@@ -2,6 +2,7 @@ import { LocalMon } from "@/lib/gameState";
 import { ProperName } from "@/lib/utils";
 import Image from "next/image";
 import { ReactNode, DragEvent } from "react";
+import MonCard from "./MonCard";
 
 type PokemonCardProps = {
   pokemon: LocalMon;
@@ -36,15 +37,9 @@ export default function PokemonCard({
       onDragOver={onDragOver}
       onDrop={onDrop}
     >
-      <Image 
-        src={pokemon.data.sprites.front_default ?? ""} 
-        alt={pokemon.data.name} 
-        width={imageSize} 
-        height={imageSize} 
-      />
-      <span className="text-sm">{ProperName(pokemon.data.name)}</span>
-      <span className="text-xs text-zinc-600">Lvl {pokemon.level}</span>
-      {children}
+      <MonCard mon={pokemon}>
+        {children}
+      </MonCard>
     </div>
   );
 } 

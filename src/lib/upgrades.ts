@@ -102,14 +102,30 @@ export interface Tool extends BaseItem {
 
 export type Item = Vitamin | TM | Tool;
 
-export type UpgradeType = "item" | "move" | "teamRocket" | "safariZone" | "professorOak";
 
-export interface Upgrade {
-  type: UpgradeType;
+export type UpgradeKind = "item" | "event";
+
+export interface ItemUpgrade {
+  kind: "item";
+  item: Item;
   name: string;
   description: string;
   execute: (game: GameState) => Promise<void>;
 }
+
+export interface EventUpgrade {
+  kind: "event";
+  id: string;
+  name: string;
+  description: string;
+  ui: {
+    colorToken: string; // tailwind token like "rose-500"
+    sprite?: string;
+  };
+  execute: (game: GameState) => Promise<void>;
+}
+
+export type Upgrade = ItemUpgrade | EventUpgrade;
 
 export const vitamins: Vitamin[] = [
   {
@@ -299,7 +315,8 @@ export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
         if (!usedUpgrades.has(vitamin.name)) {
           usedUpgrades.add(vitamin.name);
           upgrades.push({
-            type: "item",
+            kind: "item",
+            item: vitamin,
             name: vitamin.name,
             description: vitamin.description,
             execute: async (game) => {
@@ -312,7 +329,8 @@ export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
         if (!usedUpgrades.has(tool.name)) {
           usedUpgrades.add(tool.name);
           upgrades.push({
-            type: "item",
+            kind: "item",
+            item: tool,
             name: tool.name,
             description: tool.description,
             execute: async (game) => {
@@ -320,12 +338,13 @@ export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
             }
           });
         }
-      } else if (tms.length > 0) { // 30% chance for TM, only if TMs are loaded
+      } else if (tms.length > 0) { 
         const tm = tms[Math.floor(Math.random() * tms.length)];
         if (tm && !usedUpgrades.has(tm.name)) {
           usedUpgrades.add(tm.name);
           upgrades.push({
-            type: "item",
+            kind: "item",
+            item: tm,
             name: tm.name,
             description: tm.description,
             execute: async (game) => {
@@ -338,13 +357,17 @@ export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
       if (!usedUpgrades.has("Team Rocket Deal")) {
         usedUpgrades.add("Team Rocket Deal");
         upgrades.push({
-          type: "teamRocket",
+          kind: "event",
+          id: "team-rocket-deal",
           name: "Team Rocket Deal",
-          description: "Risk it all! 70% chance to get 3 random items, 30% chance to lose a random Pokémon",
+          description: "70% chance to get 3 random items, 30% chance to lose a random Pokémon",
+          ui: {
+            colorToken: "rose-500",
+            sprite: "/window.svg",
+          },
           execute: async (game) => {
             const rocketRoll = Math.random();
             if (rocketRoll < 0.7) {
-              // Success - get 3 random items
               for (let i = 0; i < 3; i++) {
                 const itemRoll = Math.random();
                 if (itemRoll < 0.4) {
@@ -356,7 +379,6 @@ export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
                 }
               }
             } else {
-              // Fail - remove a random pokemon from party
               handleTeamRocketFailure(game);
             }
             game.currentState = "setup";
