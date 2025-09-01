@@ -358,12 +358,12 @@ export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
         usedUpgrades.add("Team Rocket Deal");
         upgrades.push({
           kind: "event",
-          id: "team-rocket-deal",
-          name: "Team Rocket Deal",
-          description: "70% chance to get 3 random items, 30% chance to lose a random Pokémon",
+          id: "team-rocket",
+          name: "Team Rocket",
+          description: "70% chance to get 3 items, 30% chance to lose a Pokémon.",
           ui: {
             colorToken: "rose-500",
-            sprite: "/window.svg",
+            sprite: "/upgrades/team-rocket.webp",
           },
           execute: async (game) => {
             const rocketRoll = Math.random();

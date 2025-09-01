@@ -58,7 +58,7 @@ export default function ItemCard({
         className={`
           flex flex-col justify-center items-center p-2
           w-28 h-28
-          bg-zinc-100 text-zinc-900 hover:bg-zinc-50
+          bg-zinc-50 text-zinc-900 hover:bg-zinc-50
           cursor-pointer
           ${className}
         `}

@@ -24,27 +24,30 @@ export default function Upgrade({game, setGame}: UpgradeProps) {
 
   return (
     <Panel className="p-8 flex flex-col items-center gap-4">
-      <h1 className="text-2xl font-bold">Choose an upgrade!</h1>
+      <h1 className="text-2xl font-bold">Choose One:</h1>
       <div className="grid grid-cols-3 gap-4">
-        {upgrades.map((upgrade, index) => {
-          if (upgrade.kind === "item") {
-            return (
-              <ItemCard
-                key={index}
-                item={upgrade.item}
-                onClick={() => handleUpgradeSelect(upgrade)}
-              />
-            );
-          }
-          // event
-          return (
-            <EventCard
-              key={index}
-              event={upgrade}
-              onClick={() => handleUpgradeSelect(upgrade)}
-            />
-          );
-        })}
+        {upgrades.map((upgrade, index) => (
+          <div
+            key={index} 
+            onClick={() => handleUpgradeSelect(upgrade)} 
+            className="
+              flex items-center justify-center
+              bg-indigo-200 rounded-[30px]
+              shadow-sm shadow-zinc-900/50
+              overflow-hidden
+              hover:scale-105 hover:shadow-md
+              transition-all duration-300
+            "
+          >
+            {upgrade.kind === "item" ? (
+              <div className="p-2">
+                <ItemCard item={upgrade.item} />
+              </div>
+            ) : (
+              <EventCard event={upgrade} />
+            )}
+          </div>
+        ))}
       </div>
     </Panel>
   );

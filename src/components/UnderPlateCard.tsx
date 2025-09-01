@@ -17,7 +17,7 @@ export default function UnderPlateCard({
       <div 
         className="
           shadow-sm shadow-zinc-900/50 bg-[var(--ui-color)]
-          rounded-xl rounded-tr-3xl rounded-bl-3xl overflow-hidden w-full h-full scale-95
+          rounded-xl rounded-tr-3xl rounded-bl-3xl overflow-hidden w-full h-full scale-95 absolute
         "
         style={{
           ...tokenColorVars(plateColor)
@@ -34,7 +34,7 @@ export default function UnderPlateCard({
           rounded-bl-[24px] rounded-tr-[24px] rounded-tl-[44px] rounded-br-[44px]
           shadow-sm shadow-zinc-900/50
           flex justify-center items-center overflow-hidden
-          -translate-y-full
+          relative
         `}
       >
 

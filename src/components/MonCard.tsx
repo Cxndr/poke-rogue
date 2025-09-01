@@ -51,7 +51,7 @@ export default function MonCard({children, mon}: MonCardProps) {
       
       <h4>{ProperName(mon.data.name)}</h4>
 
-      <TypePill type={mon.move.type.name}>
+      <TypePill type={mon.move.type.name} className="mt-2 mb-0.5">
         <span className="text-md font-semibold">{ProperName(mon.move.name)}</span>
       </TypePill>
 

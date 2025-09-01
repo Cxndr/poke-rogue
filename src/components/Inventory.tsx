@@ -30,13 +30,22 @@ export default function Inventory({ game }: InventoryProps) {
         "
       >
         {game.inventory.map((item, index) => (
-          <ItemCard
+          <div 
             key={`${item.id}-${index}`}
-            item={item}
-            draggable
-            onDragStart={(e) => handleDragStart(e, item)}
-            className="cursor-move"
-          />
+            className="
+              hover:drop-shadow-xl/30
+              hover:scale-105
+              transition-all duration-300
+              relative
+            "
+          >
+            <ItemCard
+              item={item}
+              draggable
+              onDragStart={(e) => handleDragStart(e, item)}
+              className="cursor-move"
+            />
+          </div>          
         ))}
       </div>
     </div>
