@@ -46,7 +46,6 @@ export default function PokemonStorage({ game, onDrop }: PokemonStorageProps) {
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, index)}
             className="cursor-move shadow-sm shadow-zinc-900/50"
-            imageSize={48}
           />
         ))}
       </div>

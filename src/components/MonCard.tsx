@@ -6,7 +6,7 @@ import { LocalMon } from "@/lib/gameState";
 import CornerTagCard from "./CornerTagCard";
 import { PiSwordFill } from "react-icons/pi";
 import { GiHealthNormal } from "react-icons/gi";
-import { MdOutlineDoubleArrow, MdShield } from "react-icons/md";
+import { MdOutlineDoubleArrow } from "react-icons/md";
 import { BiSolidShield } from "react-icons/bi";
 import { RiMagicFill } from "react-icons/ri";
 import { RiShieldStarFill } from "react-icons/ri";

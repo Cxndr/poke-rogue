@@ -1,6 +1,5 @@
-import { GameState, getMaxHP } from "@/lib/gameState";
+import { GameState } from "@/lib/gameState";
 import { ProperName } from "@/lib/utils";
-import Image from "next/image";
 import Panel from "./Panel";
 import HeaderPanel from "./HeaderPanel";
 import MonCard from "./MonCard";

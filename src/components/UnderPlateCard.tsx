@@ -1,5 +1,4 @@
 import { tokenColorVars } from "@/lib/colors";
-import CornerTag from "./CornerTag"
 
 type UnderPlateCardProps = {
   plateColor: string;

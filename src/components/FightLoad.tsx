@@ -22,7 +22,6 @@ export default function FightLoad({game, setGame, setMonSelection}: FightLoadPro
     const enemyParty = await getEnemyParty(game.round*5, enemyCount, game.round);
     setEnemyParty(enemyParty);
     setEnemyLoaded(true);
-    setMonSelection(enemyParty);
   }
 
   if (!enemyFetched) {
@@ -33,7 +32,7 @@ export default function FightLoad({game, setGame, setMonSelection}: FightLoadPro
   return (
     <div className="h-full w-full p-8 flex items-center justify-center">
       { enemyLoaded 
-        ? <Fight game={game} setGame={setGame} enemyParty={enemyParty} />
+        ? <Fight game={game} setGame={setGame} enemyParty={enemyParty} setMonSelection={setMonSelection} />
         : <div className="
             flex flex-col items-center justify-center gap-4
           bg-zinc-50/30 backdrop-blur-xl p-8 rounded-3xl

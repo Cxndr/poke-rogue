@@ -21,6 +21,14 @@ export default function Game() {
   const [game, setGame] = useState<GameState>(gameState);
   const [monSelection, setMonSelection] = useState<LocalMon[]>([]);
 
+  // When returning to start screen (e.g., after a loss), clear any cached
+  // selection so starters are fetched fresh rather than showing old enemy party
+  useEffect(() => {
+    if (game.currentState === "startGame") {
+      setMonSelection([]);
+    }
+  }, [game.currentState]);
+
     return (
       <div className="h-full w-full flex items-center justify-center">
 

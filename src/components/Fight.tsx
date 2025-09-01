@@ -10,9 +10,10 @@ type FightProps = {
   game: GameState;
   setGame: (game: GameState) => void;
   enemyParty: LocalMon[];
+  setMonSelection: (mon: LocalMon[]) => void;
 }
 
-export default function Fight({game, setGame, enemyParty}: FightProps) {
+export default function Fight({game, setGame, enemyParty, setMonSelection}: FightProps) {
 
   const timeoutRefs = useRef<{ [key: string]: NodeJS.Timeout }>({});
   const fightLogRef = useRef<HTMLDivElement>(null);
@@ -77,6 +78,8 @@ export default function Fight({game, setGame, enemyParty}: FightProps) {
 
   const fightWon = () => {
     game.currentState = "runWin";
+    // Populate next selection with the defeated enemy party
+    setMonSelection(enemyParty);
     finishRound("won", game, setGame);
   }
 

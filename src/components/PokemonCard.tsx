@@ -1,6 +1,4 @@
 import { LocalMon } from "@/lib/gameState";
-import { ProperName } from "@/lib/utils";
-import Image from "next/image";
 import { ReactNode, DragEvent } from "react";
 import MonCard from "./MonCard";
 
@@ -13,7 +11,6 @@ type PokemonCardProps = {
   onDragStart?: (e: DragEvent) => void;
   onDragOver?: (e: DragEvent) => void;
   onDrop?: (e: DragEvent) => void;
-  imageSize?: number;
 }
 
 export default function PokemonCard({ 
@@ -25,7 +22,6 @@ export default function PokemonCard({
   onDragStart,
   onDragOver,
   onDrop,
-  imageSize = 48
 }: PokemonCardProps) {
   
   return (
