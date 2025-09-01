@@ -375,7 +375,15 @@ export function getRandomUpgrades(count: number, game: GameState): Upgrade[] {
                 } else if (itemRoll < 0.7) {
                   game.inventory.push(tools[Math.floor(Math.random() * tools.length)]);
                 } else {
-                  game.inventory.push(tms[Math.floor(Math.random() * tms.length)]);
+                  // Ensure we never push an undefined TM. If TMs are not loaded yet,
+                  // fetch a valid one before adding it to the inventory.
+                  const tm = await getRandomItemTM();
+                  if (tm) {
+                    game.inventory.push(tm);
+                  } else {
+                    // Fallback: if for some reason we still don't have a TM, add a vitamin.
+                    game.inventory.push(vitamins[Math.floor(Math.random() * vitamins.length)]);
+                  }
                 }
               }
             } else {
