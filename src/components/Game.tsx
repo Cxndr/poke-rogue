@@ -38,7 +38,7 @@ export default function Game() {
           <>
 
             {game.currentState === "runWin" && (
-              <RunWin game={game} />
+              <RunWin game={game} setGame={setGame} setMonSelection={setMonSelection} />
             )}
 
             {game.currentState === "startGame" && (

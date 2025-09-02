@@ -1,4 +1,5 @@
-import { GameState } from "@/lib/gameState"
+import { GameState, getMaxHP } from "@/lib/gameState"
+import { getStatBase, StatName } from "@/lib/stats";
 import { PiArrowFatLineRight } from "react-icons/pi";
 import Image from "next/image";
 import HeaderPanel from "./HeaderPanel";
@@ -14,6 +15,18 @@ export default function NewEvolutions({ game, setGame }: NewEvolutionsProps) {
 
   function handleContinueClick() {
     setGame({...game, newEvolutions: []});
+  }
+
+  function statWithFlats(pokemonData: any, stat: StatName, mon: any) {
+    if (stat === "hp") {
+      // Show HP as max HP with flat bonuses only (exclude multipliers)
+      const baseMax = getMaxHP(getStatBase(pokemonData, "hp"), mon.level);
+      const flat = mon.hpFlatBonus ?? 0;
+      return baseMax + flat;
+    }
+    const base = getStatBase(pokemonData, stat);
+    const flat = mon.statFlatBonus?.[stat] ?? 0;
+    return base + flat;
   }
 
   return (
@@ -40,12 +53,12 @@ export default function NewEvolutions({ game, setGame }: NewEvolutionsProps) {
               />
               <p>{evolution.oldMonData.name}</p>
               <div className="grid grid-cols-4 gap-2 text-right"> 
-                <span>HP:  </span><span>{evolution.oldMonData.stats[0].base_stat}</span>
-                <span>Atk: </span><span>{evolution.oldMonData.stats[1].base_stat}</span>
-                <span>Def: </span><span>{evolution.oldMonData.stats[2].base_stat}</span>
-                <span>SpA: </span><span>{evolution.oldMonData.stats[3].base_stat}</span>
-                <span>SpD: </span><span>{evolution.oldMonData.stats[4].base_stat}</span>
-                <span>Spd: </span><span>{evolution.oldMonData.stats[5].base_stat}</span>
+                <span>HP:  </span><span>{statWithFlats(evolution.oldMonData, "hp", evolution.mon)}</span>
+                <span>Atk: </span><span>{statWithFlats(evolution.oldMonData, "attack", evolution.mon)}</span>
+                <span>Def: </span><span>{statWithFlats(evolution.oldMonData, "defense", evolution.mon)}</span>
+                <span>SpA: </span><span>{statWithFlats(evolution.oldMonData, "special-attack", evolution.mon)}</span>
+                <span>SpD: </span><span>{statWithFlats(evolution.oldMonData, "special-defense", evolution.mon)}</span>
+                <span>Spd: </span><span>{statWithFlats(evolution.oldMonData, "speed", evolution.mon)}</span>
               </div>
             </div>
 
@@ -60,12 +73,12 @@ export default function NewEvolutions({ game, setGame }: NewEvolutionsProps) {
               />
               <p>{evolution.newMonData.name}</p>
               <div className="grid grid-cols-4 gap-2 text-right"> 
-                <span>HP:  </span><span>{evolution.newMonData.stats[0].base_stat}</span>
-                <span>Atk: </span><span>{evolution.newMonData.stats[1].base_stat}</span>
-                <span>Def: </span><span>{evolution.newMonData.stats[2].base_stat}</span>
-                <span>SpA: </span><span>{evolution.newMonData.stats[3].base_stat}</span>
-                <span>SpD: </span><span>{evolution.newMonData.stats[4].base_stat}</span>
-                <span>Spd: </span><span>{evolution.newMonData.stats[5].base_stat}</span>
+                <span>HP:  </span><span>{statWithFlats(evolution.newMonData, "hp", evolution.mon)}</span>
+                <span>Atk: </span><span>{statWithFlats(evolution.newMonData, "attack", evolution.mon)}</span>
+                <span>Def: </span><span>{statWithFlats(evolution.newMonData, "defense", evolution.mon)}</span>
+                <span>SpA: </span><span>{statWithFlats(evolution.newMonData, "special-attack", evolution.mon)}</span>
+                <span>SpD: </span><span>{statWithFlats(evolution.newMonData, "special-defense", evolution.mon)}</span>
+                <span>Spd: </span><span>{statWithFlats(evolution.newMonData, "speed", evolution.mon)}</span>
               </div>
             </div>
 

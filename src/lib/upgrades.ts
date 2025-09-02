@@ -25,17 +25,25 @@
 */
 
 import { Move, MachineClient, MoveClient } from "pokenode-ts";
-import { GameState, LocalMon } from "./gameState";
+import { GameState, LocalMon, getMonMaxHP } from "./gameState";
 import { ProperName } from "./utils";
+import { StatName } from "@/lib/stats";
 
 const machineApi = new MachineClient();
 const moveApi = new MoveClient();
 export type Stat = "hp" | "attack" | "defense" | "special-attack" | "special-defense" | "speed";
 export function upgradeStat(stat:Stat, amount: number, pokemon: LocalMon) {
-  const statData = pokemon.data.stats.find(s => s.stat.name === stat);
-  if (statData) {
-    statData.base_stat += amount;
+  if (stat === "hp") {
+    const oldMax = getMonMaxHP(pokemon);
+    pokemon.hpFlatBonus = (pokemon.hpFlatBonus ?? 0) + amount;
+    const newMax = getMonMaxHP(pokemon);
+    pokemon.hp = Math.min(newMax, Math.round(pokemon.hp * newMax / oldMax));
+    return;
   }
+  if (!pokemon.statFlatBonus) pokemon.statFlatBonus = {};
+  // Ensure key type aligns with StatName
+  const key = stat as StatName;
+  pokemon.statFlatBonus[key] = (pokemon.statFlatBonus[key] ?? 0) + amount;
 }
 export function getUpgradeStat() {
   const statNumber = Math.floor(Math.random() * 6) + 1;
@@ -131,12 +139,12 @@ export const vitamins: Vitamin[] = [
   {
     id: "hpup",
     name: "HP Up",
-    description: "+50 HP",
+    description: "+30 HP",
     type: "vitamin",
     sprite: "/items/hpup.png",
     stat: "hp",
-    amount: 50,
-    use: (pokemon) => upgradeStat("hp", 50, pokemon)
+    amount: 30,
+    use: (pokemon) => upgradeStat("hp", 30, pokemon)
   },
   {
     id: "protein",
@@ -193,6 +201,12 @@ export const vitamins: Vitamin[] = [
 ];
 
 export const tools: Tool[] = [
+  // helper functions to avoid rounding drift and centralize logic
+  // capture original stat on equip, restore exact value on unequip
+  // since only one tool can be equipped at a time, we can track per-stat originals
+  
+  
+  
   {
     id: "choiceband",
     name: "Choice Band", 
@@ -200,12 +214,12 @@ export const tools: Tool[] = [
     type: "tool",
     sprite: "/items/choiceband.png",
     effect: (pokemon) => {
-      const atk = pokemon.data.stats.find(s => s.stat.name === "attack");
-      if (atk) atk.base_stat = Math.floor(atk.base_stat * 1.5);
+      if (!pokemon.statMultiplier) pokemon.statMultiplier = {};
+      pokemon.statMultiplier["attack"] = 1.5;
     },
     unequip: (pokemon) => {
-      const atk = pokemon.data.stats.find(s => s.stat.name === "attack");
-      if (atk) atk.base_stat = Math.floor(atk.base_stat / 1.5);
+      if (!pokemon.statMultiplier) pokemon.statMultiplier = {};
+      pokemon.statMultiplier["attack"] = 1;
     }
   },
   {
@@ -215,12 +229,12 @@ export const tools: Tool[] = [
     type: "tool",
     sprite: "/items/choicespecs.png",
     effect: (pokemon) => {
-      const spAtk = pokemon.data.stats.find(s => s.stat.name === "special-attack");
-      if (spAtk) spAtk.base_stat = Math.floor(spAtk.base_stat * 1.5);
+      if (!pokemon.statMultiplier) pokemon.statMultiplier = {};
+      pokemon.statMultiplier["special-attack"] = 1.5;
     },
     unequip: (pokemon) => {
-      const spAtk = pokemon.data.stats.find(s => s.stat.name === "special-attack");
-      if (spAtk) spAtk.base_stat = Math.floor(spAtk.base_stat / 1.5);
+      if (!pokemon.statMultiplier) pokemon.statMultiplier = {};
+      pokemon.statMultiplier["special-attack"] = 1;
     }
   },
   {
@@ -230,12 +244,12 @@ export const tools: Tool[] = [
     type: "tool",
     sprite: "/items/pothelmet.png",
     effect: (pokemon) => {
-      const def = pokemon.data.stats.find(s => s.stat.name === "defense");
-      if (def) def.base_stat = Math.floor(def.base_stat * 1.5);
+      if (!pokemon.statMultiplier) pokemon.statMultiplier = {};
+      pokemon.statMultiplier["defense"] = 1.5;
     },
     unequip: (pokemon) => {
-      const def = pokemon.data.stats.find(s => s.stat.name === "defense");
-      if (def) def.base_stat = Math.floor(def.base_stat / 1.5);
+      if (!pokemon.statMultiplier) pokemon.statMultiplier = {};
+      pokemon.statMultiplier["defense"] = 1;
     }
   },
   {
@@ -245,12 +259,12 @@ export const tools: Tool[] = [
     type: "tool",
     sprite: "/items/assaultvest.png",
     effect: (pokemon) => {
-      const spDef = pokemon.data.stats.find(s => s.stat.name === "special-defense");
-      if (spDef) spDef.base_stat = Math.floor(spDef.base_stat * 1.5);
+      if (!pokemon.statMultiplier) pokemon.statMultiplier = {};
+      pokemon.statMultiplier["special-defense"] = 1.5;
     },
     unequip: (pokemon) => {
-      const spDef = pokemon.data.stats.find(s => s.stat.name === "special-defense");
-      if (spDef) spDef.base_stat = Math.floor(spDef.base_stat / 1.5);
+      if (!pokemon.statMultiplier) pokemon.statMultiplier = {};
+      pokemon.statMultiplier["special-defense"] = 1;
     }
   },
   {
@@ -260,12 +274,12 @@ export const tools: Tool[] = [
     type: "tool",
     sprite: "/items/choicescarf.png",
     effect: (pokemon) => {
-      const speed = pokemon.data.stats.find(s => s.stat.name === "speed");  
-      if (speed) speed.base_stat = Math.floor(speed.base_stat * 1.5);
+      if (!pokemon.statMultiplier) pokemon.statMultiplier = {};
+      pokemon.statMultiplier["speed"] = 1.5;
     },
     unequip: (pokemon) => {
-      const speed = pokemon.data.stats.find(s => s.stat.name === "speed");
-      if (speed) speed.base_stat = Math.floor(speed.base_stat / 1.5);
+      if (!pokemon.statMultiplier) pokemon.statMultiplier = {};
+      pokemon.statMultiplier["speed"] = 1;
     }
   },
   {
@@ -275,12 +289,16 @@ export const tools: Tool[] = [
     type: "tool",
     sprite: "/items/giantcape.png",
     effect: (pokemon) => {
-      const hp = pokemon.data.stats.find(s => s.stat.name === "hp");
-      if (hp) hp.base_stat = Math.floor(hp.base_stat * 1.5);
+      const oldMax = getMonMaxHP(pokemon);
+      pokemon.hpMultiplier = 1.5;
+      const newMax = getMonMaxHP(pokemon);
+      pokemon.hp = Math.min(newMax, Math.round(pokemon.hp * newMax / oldMax));
     },
     unequip: (pokemon) => {
-      const hp = pokemon.data.stats.find(s => s.stat.name === "hp");
-      if (hp) hp.base_stat = Math.floor(hp.base_stat / 1.5);
+      const prevMax = getMonMaxHP(pokemon);
+      pokemon.hpMultiplier = 1;
+      const newMax = getMonMaxHP(pokemon);
+      pokemon.hp = Math.min(newMax, Math.round(pokemon.hp * newMax / prevMax));
     }
   },
   // todo: add more

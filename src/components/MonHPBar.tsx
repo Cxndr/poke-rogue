@@ -1,11 +1,11 @@
-import { LocalMon, getMaxHP } from "@/lib/gameState"
+import { LocalMon, getMonMaxHP } from "@/lib/gameState"
 
 type MonHPBarTypes = {
   pokemon: LocalMon,
 }
 
 export default function MonHPBar({pokemon}: MonHPBarTypes) {
-  const hpPercent = Math.round(pokemon.hp / getMaxHP(pokemon.data.stats[0].base_stat, pokemon.level) * 100)
+  const hpPercent = Math.round(pokemon.hp / getMonMaxHP(pokemon) * 100)
   
   // Use a conditional to determine the complete class name
   const barColor = hpPercent < 21 

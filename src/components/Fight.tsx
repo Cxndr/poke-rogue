@@ -1,4 +1,4 @@
-import { finishRound, GameState, getMaxHP, LocalMon, startAttackLoop } from "@/lib/gameState";
+import { finishRound, GameState, getMonMaxHP, LocalMon, startAttackLoop } from "@/lib/gameState";
 import { ProperName } from "@/lib/utils";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -125,7 +125,7 @@ export default function Fight({game, setGame, enemyParty, setMonSelection}: Figh
         <div className="flex flex-row gap-4">
           {enemyParty.map((mon, index) => (
             <div key={index} className={`flex flex-col items-center justify-center ${mon.hp <= 0 && faintedClassName}`}>
-              <p>Lvl: {mon.level} HP: {mon.hp}/{getMaxHP(mon.data.stats[0].base_stat, mon.level)}</p>
+              <p>Lvl: {mon.level} HP: {mon.hp}/{getMonMaxHP(mon)}</p>
               <MonHPBar pokemon={mon} />
               <Image src={mon.data.sprites.front_default ?? ""} alt={mon.data.name} width={96} height={96} />
               <p>{ProperName(mon.data.name)}</p>
@@ -147,7 +147,7 @@ export default function Fight({game, setGame, enemyParty, setMonSelection}: Figh
             if (!slot.pokemon) return null;  // Skip empty slots
             return (
               <div key={index} className={`flex flex-col items-center justify-center ${slot.pokemon.hp <= 0 && faintedClassName}`}>
-                <p>Lvl: {slot.pokemon.level} HP: {slot.pokemon.hp}/{getMaxHP(slot.pokemon.data.stats[0].base_stat, slot.pokemon.level)}</p>
+                <p>Lvl: {slot.pokemon.level} HP: {slot.pokemon.hp}/{getMonMaxHP(slot.pokemon)}</p>
                 <MonHPBar pokemon={slot.pokemon}/>
                 <Image src={slot.pokemon.data.sprites.back_default ?? ""} alt={slot.pokemon.data.name} width={96} height={96} />
                 <p>{ProperName(slot.pokemon.data.name)}</p>

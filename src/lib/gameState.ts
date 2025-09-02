@@ -2,6 +2,8 @@
 import { Move, MoveClient, Pokemon, PokemonClient, Type, EvolutionClient, PokemonSpecies, EvolutionChain, ChainLink } from "pokenode-ts";
 import { totalPokemon, maxRound, maxPartySize } from "./settings";
 import { Item, Tool } from './upgrades';
+import { StatName } from "@/lib/stats";
+import { getStatBase } from "@/lib/stats";
 import { ProperName } from "./utils";
 const monApi = new PokemonClient();
 const moveApi = new MoveClient();
@@ -13,6 +15,10 @@ export type LocalMon = {
   level: number;
   move: Move;
   equippedTool?: Tool;
+  hpFlatBonus?: number;
+  hpMultiplier?: number;
+  statFlatBonus?: Partial<Record<StatName, number>>;
+  statMultiplier?: Partial<Record<StatName, number>>;
   speciesData: PokemonSpecies;
   evolutionData: EvolutionChain;
   statBoosts: {
@@ -52,7 +58,6 @@ export type GameState = {
   "setup" |
   "fight" |
   "upgrade" |
-  "gameComplete" |
   "gameOver" |
   "runWin";
   options: Pokemon[];
@@ -60,7 +65,7 @@ export type GameState = {
   fightLog: string[];
   inventory: Item[];
   pokemonStorage: LocalMon[];
-  newEvolutions: {oldMonData: Pokemon, newMonData: Pokemon}[];
+  newEvolutions: {oldMonData: Pokemon, newMonData: Pokemon, mon: LocalMon}[];
 }
 
 export function createInitialGameState(): GameState {
@@ -83,8 +88,25 @@ export function getMaxHP(baseHP: number, level: number) {
   return Math.floor( (2 * baseHP + 8) * level / 100 ) + level + 10;
 }
 
+export function getMonMaxHP(mon: LocalMon) {
+  const base = getMaxHP(getStatBase(mon.data, "hp"), mon.level);
+  const flat = mon.hpFlatBonus ?? 0;
+  const mult = mon.hpMultiplier ?? 1;
+  return Math.floor((base + flat) * mult);
+}
+
+export function getMonStat(mon: LocalMon, stat: StatName) {
+  if (stat === "hp") {
+    return getStatBase(mon.data, "hp");
+  }
+  const base = getStatBase(mon.data, stat);
+  const flat = mon.statFlatBonus?.[stat] ?? 0;
+  const mult = mon.statMultiplier?.[stat] ?? 1;
+  return Math.floor((base + flat) * mult);
+}
+
 export function resetHP(mon: LocalMon) {
-  mon.hp = getMaxHP(mon.data.stats[0].base_stat, mon.level);
+  mon.hp = getMonMaxHP(mon);
 }
 
 export function resetParty(game: GameState) {
@@ -139,14 +161,14 @@ export async function evolveMons(game: GameState) {
     if (slot.pokemon) {
       const result = await evolveSingleMon(slot.pokemon);
       if (result) {
-        game.newEvolutions.push(result);
+        game.newEvolutions.push({...result, mon: slot.pokemon});
       }
     }
   }
   for (const mon of game.pokemonStorage) {
     const result = await evolveSingleMon(mon);
     if (result) {
-      game.newEvolutions.push(result);
+      game.newEvolutions.push({...result, mon});
     }
   }
 }
@@ -158,7 +180,7 @@ export function clearNewEvolutions(game: GameState) {
 export function finishRound(result: "won" | "lost", game: GameState, setGame: (game: GameState) => void) {
   if (result === "won") {
     if (game.round >= maxRound) {
-      setGame({...game, currentState: "gameComplete"});
+      setGame({...game, currentState: "runWin"});
     } else {
       const updatedGameState = {
         ...game,
@@ -183,6 +205,7 @@ const startingMonNames = [
   "charmander",
   "pikachu",
   "eevee",
+  "mewtwo"
 ]
 
 export async function getStartingMons() {
@@ -308,7 +331,19 @@ export async function getEnemyParty(level: number, count: number, round: number)
     const speciesData = await monApi.getPokemonSpeciesById(mon.id); 
     const evolutionChainId = Number(speciesData.evolution_chain.url.split("/").filter(Boolean).pop())
     const evolutionData = await evoApi.getEvolutionChainById(evolutionChainId);
-    eParty.push({data: mon, level: level, move: move, hp: getMaxHP(mon.stats[0].base_stat, level), speciesData: speciesData, evolutionData: evolutionData, statBoosts: blankStatBoosts});
+    eParty.push({
+      data: mon,
+      level: level,
+      move: move,
+      hp: getMaxHP(getStatBase(mon, "hp"), level),
+      hpFlatBonus: 0,
+      hpMultiplier: 1,
+      statFlatBonus: {},
+      statMultiplier: {},
+      speciesData: speciesData,
+      evolutionData: evolutionData,
+      statBoosts: blankStatBoosts
+    });
   }
   return eParty;
 }
@@ -334,13 +369,13 @@ export function calculateAttackTime(speedStat: number) {
 export async function calculateDamage(attacker: LocalMon, target: LocalMon, move: Move) {
   // using gen 1 formula found here: https://bulbapedia.bulbagarden.net/wiki/Damage
   const level = attacker.level;
-  const critThreshold = attacker.data.stats[5].base_stat/2;
+  const critThreshold = getMonStat(attacker, "speed")/2;
   const critRoll = Math.floor(Math.random() * 255);
   const critical = critRoll < critThreshold ? 2 : 1;
   
   const isSpecial = move.damage_class?.name === "special";
-  const A = isSpecial ? attacker.data.stats[3].base_stat : attacker.data.stats[1].base_stat;
-  const D = isSpecial ? target.data.stats[4].base_stat : target.data.stats[2].base_stat;
+  const A = isSpecial ? getMonStat(attacker, "special-attack") : getMonStat(attacker, "attack");
+  const D = isSpecial ? getMonStat(target, "special-defense") : getMonStat(target, "defense");
   const power = move.power ?? 0;
   const STAB = attacker.data.types.some(type => type.type.name === move.type.name) ? 1.5 : 1;
   const moveTypeData = await monApi.getTypeByName(move.type.name);
@@ -394,7 +429,7 @@ export function startAttackLoop(
     clearInterval(timeoutRefs[`${attacker.data.name}_interval`]);
   }
 
-  const attackTime = calculateAttackTime(attacker.data.stats[3].base_stat);
+  const attackTime = calculateAttackTime(getMonStat(attacker, "speed"));
   const startTime = Date.now();
 
   // Store the interval reference
@@ -455,11 +490,16 @@ export async function newLocalMon(pokemon: Pokemon) {
   const evolutionChainId = Number(speciesData.evolution_chain.url.split("/").filter(Boolean).pop())
   const evolutionData = await evoApi.getEvolutionChainById(evolutionChainId);
 
+  const baseHP = getMaxHP(getStatBase(pokemon, "hp"), 5);
   const localMon = {
     data: pokemon,
-    hp: getMaxHP(pokemon.stats[0].base_stat, 5),
+    hp: baseHP,
     level: 5,
     move: await getRandomMove(pokemon),
+    hpFlatBonus: 0,
+    hpMultiplier: 1,
+    statFlatBonus: {},
+    statMultiplier: {},
     statBoosts: blankStatBoosts,
     speciesData: speciesData,
     evolutionData: evolutionData

@@ -10,7 +10,8 @@ import { MdOutlineDoubleArrow } from "react-icons/md";
 import { BiSolidShield } from "react-icons/bi";
 import { RiMagicFill } from "react-icons/ri";
 import { RiShieldStarFill } from "react-icons/ri";
-import { getMaxHP } from "@/lib/gameState";
+import { getMonMaxHP, getMonStat } from "@/lib/gameState";
+import { getStatBase } from "@/lib/stats";
 
 
 type MonCardProps = {
@@ -65,32 +66,32 @@ export default function MonCard({children, mon}: MonCardProps) {
       >
         <span className="flex items-center gap-1 ">
           <GiHealthNormal size={14} /> 
-          {getMaxHP(mon.data.stats[0].base_stat, mon.level)}
+          {getMonMaxHP(mon)}
         </span>
 
         <span className="flex items-center gap-1 ">
           <PiSwordFill size={18}/>
-          {mon.data.stats[1].base_stat}
+          {getMonStat(mon, "attack")}
         </span>
 
         <span className="flex items-center gap-1 ">
           <RiMagicFill size={18}/>
-          {mon.data.stats[3].base_stat}
+          {getMonStat(mon, "special-attack")}
         </span>
 
         <span className="flex items-center gap-1 ">
           <MdOutlineDoubleArrow size={20}/>
-          {mon.data.stats[4].base_stat}
+          {getMonStat(mon, "speed")}
         </span>
 
         <span className="flex items-center gap-1 ">
           <BiSolidShield size={18}/>
-          {mon.data.stats[2].base_stat}
+          {getMonStat(mon, "defense")}
         </span>
 
         <span className="flex items-center gap-1 ">
           <RiShieldStarFill size={18}/>
-          {mon.data.stats[4].base_stat}
+          {getMonStat(mon, "special-defense")}
         </span>
         
 
