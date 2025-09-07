@@ -1,7 +1,7 @@
 import { GameState, LocalMon } from "@/lib/gameState";
 import { DragEvent } from "react";
-import PokemonCard from "./PokemonCard";
 import HeaderPanel from "./HeaderPanel";
+import MonCard from "./MonCard";
 
 type PokemonStorageProps = {
   game: GameState;
@@ -38,15 +38,22 @@ export default function PokemonStorage({ game, onDrop }: PokemonStorageProps) {
         "
       >
         {game.pokemonStorage.map((pokemon, index) => (
-          <PokemonCard
-            key={`${pokemon.data.id}-${index}`}
-            pokemon={pokemon}
+          <div 
+            key={index} 
+            className={`
+              flex flex-col items-center p-2 
+              cursor-pointer
+            `}
             draggable
             onDragStart={(e) => handleDragStart(e, pokemon, index)}
             onDragOver={handleDragOver}
             onDrop={(e) => handleDrop(e, index)}
-            className="cursor-move shadow-sm shadow-zinc-900/50"
-          />
+          >
+            <MonCard
+              key={`${pokemon.data.id}-${index}`}
+              mon={pokemon}
+            />
+          </div>
         ))}
       </div>
     </div>

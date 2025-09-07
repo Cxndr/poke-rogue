@@ -11,7 +11,6 @@ import { BiSolidShield } from "react-icons/bi";
 import { RiMagicFill } from "react-icons/ri";
 import { RiShieldStarFill } from "react-icons/ri";
 import { getMonMaxHP, getMonStat } from "@/lib/gameState";
-import { getStatBase } from "@/lib/stats";
 
 
 type MonCardProps = {

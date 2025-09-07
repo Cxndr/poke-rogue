@@ -1,10 +1,12 @@
-import { GameState, getMaxHP } from "@/lib/gameState"
+import { getMaxHP } from "@/lib/gameState"
+import type { GameState, LocalMon } from "@/lib/gameState"
 import { getStatBase, StatName } from "@/lib/stats";
 import { PiArrowFatLineRight } from "react-icons/pi";
 import Image from "next/image";
 import HeaderPanel from "./HeaderPanel";
 import Button from "./Button";
 import Panel from "./Panel";
+import type { Pokemon } from "pokenode-ts";
 
 type NewEvolutionsProps = {
   game: GameState,
@@ -17,7 +19,7 @@ export default function NewEvolutions({ game, setGame }: NewEvolutionsProps) {
     setGame({...game, newEvolutions: []});
   }
 
-  function statWithFlats(pokemonData: any, stat: StatName, mon: any) {
+  function statWithFlats(pokemonData: Pokemon, stat: StatName, mon: LocalMon): number {
     if (stat === "hp") {
       // Show HP as max HP with flat bonuses only (exclude multipliers)
       const baseMax = getMaxHP(getStatBase(pokemonData, "hp"), mon.level);
